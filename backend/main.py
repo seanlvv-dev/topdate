@@ -182,12 +182,16 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
     db.add(vc)
     await db.commit()
 
-    await send_verification_email(req.email, code)
+    email_sent = await send_verification_email(req.email, code)
 
-    return {
+    resp = {
         "message": "注册成功！请查看邮箱验证码完成验证",
         "user": _user_to_brief(user),
     }
+    if not email_sent:
+        resp["verification_code"] = code
+        resp["message"] = "邮件发送暂时不可用，你的验证码是：" + code
+    return resp
 
 
 @app.post("/api/auth/verify-email", response_model=dict)
@@ -325,8 +329,9 @@ async def resend_verification(req: ResendVerificationRequest, request: Request, 
     db.add(vc)
     await db.commit()
 
-    await send_verification_email(req.email, code)
-
+    email_sent = await send_verification_email(req.email, code)
+    if not email_sent:
+        return {"message": "验证码已重新发送", "verification_code": code}
     return {"message": "验证码已重新发送至你的邮箱"}
 
 
