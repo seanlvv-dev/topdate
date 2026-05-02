@@ -10,7 +10,7 @@ UNIVERSITIES = [
     {"id": 2, "name": "清华大学", "short_name": "THU", "province": "北京", "city": "北京",
      "email_domains": ["mails.tsinghua.edu.cn", "tsinghua.edu.cn"], "region": "华北"},
     {"id": 3, "name": "复旦大学", "short_name": "FDU", "province": "上海", "city": "上海",
-     "email_domains": ["fudan.edu.cn", "m.fudan.edu.cn"], "region": "华东"},
+     "email_domains": ["m.fudan.edu.cn", "fudan.edu.cn"], "region": "华东"},
     {"id": 4, "name": "上海交通大学", "short_name": "SJTU", "province": "上海", "city": "上海",
      "email_domains": ["sjtu.edu.cn"], "region": "华东"},
     {"id": 5, "name": "浙江大学", "short_name": "ZJU", "province": "浙江", "city": "杭州",
