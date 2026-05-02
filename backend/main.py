@@ -171,7 +171,7 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
 
     # 生成并发送验证码
     code = create_verification_code()
-    expires = datetime.utcnow + timedelta(minutes=10)
+    expires = datetime.utcnow() + timedelta(minutes=10)
 
     vc = VerificationCode(
         email=req.email,
@@ -200,7 +200,7 @@ async def verify_email(req: VerifyEmailRequest, request: Request, db: AsyncSessi
             VerificationCode.email == req.email,
             VerificationCode.code == req.code,
             VerificationCode.used == False,
-            VerificationCode.expires_at > datetime.utcnow,
+            VerificationCode.expires_at > datetime.utcnow(),
         ).order_by(VerificationCode.created_at.desc())
     )
     vc = result.scalar_one_or_none()
@@ -263,7 +263,7 @@ async def forgot_password(req: ForgotPasswordRequest, request: Request, db: Asyn
         raise HTTPException(status_code=404, detail="该邮箱未注册")
 
     code = create_verification_code()
-    expires = datetime.utcnow + timedelta(minutes=10)
+    expires = datetime.utcnow() + timedelta(minutes=10)
 
     vc = VerificationCode(email=req.email, code=code, purpose="reset", expires_at=expires)
     db.add(vc)
@@ -286,7 +286,7 @@ async def reset_password(req: ResetPasswordRequest, request: Request, db: AsyncS
             VerificationCode.code == req.code,
             VerificationCode.purpose == "reset",
             VerificationCode.used == False,
-            VerificationCode.expires_at > datetime.utcnow,
+            VerificationCode.expires_at > datetime.utcnow(),
         ).order_by(VerificationCode.created_at.desc())
     )
     vc = result.scalar_one_or_none()
@@ -319,7 +319,7 @@ async def resend_verification(req: ResendVerificationRequest, request: Request, 
         raise HTTPException(status_code=404, detail="该邮箱未注册")
 
     code = create_verification_code()
-    expires = datetime.utcnow + timedelta(minutes=10)
+    expires = datetime.utcnow() + timedelta(minutes=10)
 
     vc = VerificationCode(email=req.email, code=code, purpose="register", expires_at=expires)
     db.add(vc)
@@ -706,7 +706,7 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
     success_rate = (matched_pairs / max(total_attempts, 1)) * 100 if total_attempts else 0.0
 
     # 本周活跃用户（最近7天有操作的）
-    week_ago = datetime.utcnow - timedelta(days=7)
+    week_ago = datetime.utcnow() - timedelta(days=7)
     active_week = await db.scalar(
         select(func.count(User.id)).where(User.updated_at >= week_ago)
     )
