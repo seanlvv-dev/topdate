@@ -31,8 +31,13 @@ export default function VerifyEmail() {
     setResending(true);
     setResendMsg('');
     try {
-      await api.post('/auth/resend-verification', { email: user.email });
-      setResendMsg('验证码已重新发送，请查收邮箱');
+      const res = await api.post('/auth/resend-verification', { email: user.email });
+      if (res.data.verification_code) {
+        setCode(res.data.verification_code);
+        setResendMsg('验证码已获取：' + res.data.verification_code);
+      } else {
+        setResendMsg('验证码已重新发送，请查收邮箱');
+      }
     } catch (err) {
       setResendMsg(err.response?.data?.detail || '重发失败');
     } finally {
