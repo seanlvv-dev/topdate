@@ -114,7 +114,7 @@ async def run_weekly_matching():
                 pair_scores[pair] = m
 
         # 插入匹配记录
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         reveal_time = now.replace(hour=18, minute=0, second=0, microsecond=0)
         deadline = reveal_time + timedelta(days=7)
 
@@ -160,7 +160,7 @@ async def run_weekly_matching():
 async def cleanup_expired_matches():
     """清理过期匹配（下周三18:00后仍未操作的匹配自动过期）"""
     async with async_session() as db:
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         result = await db.execute(
             select(Match).where(
                 Match.status == MatchStatus.PENDING.value,
