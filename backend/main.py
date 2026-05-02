@@ -24,7 +24,8 @@ from models import (
     StudentVerificationStatus, MatchStatus, Gender,
 )
 from schemas import (
-    RegisterRequest, VerifyEmailRequest, LoginRequest, TokenResponse,
+    RegisterRequest, VerifyEmailRequest, SendCodeRequest,
+    LoginRequest, TokenResponse,
     UserBriefResponse, SurveyAnswers, SurveySubmitRequest,
     MatchCardResponse, MatchActionRequest, StatsResponse,
     ProfileUpdateRequest, AdminActionRequest, UniversityManageRequest,
@@ -131,17 +132,16 @@ def _user_to_brief(user: User) -> dict:
 
 # ==================== 认证相关 API ====================
 
-@app.post("/api/auth/register", response_model=dict)
-async def register(req: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
-    """用户注册"""
-    if not check_rate_limit("/api/auth/register", request.client.host):
+@app.post("/api/auth/send-code", response_model=dict)
+async def send_verification_code(req: SendCodeRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    """发送验证码（注册前先验证邮箱）"""
+    if not check_rate_limit("/api/auth/send-code", request.client.host):
         raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
-    # 验证大学是否存在
+
     uni = get_university_by_id(req.university_id)
     if not uni:
         raise HTTPException(status_code=400, detail="无效的大学ID")
 
-    # 验证邮箱域名
     if not get_university_by_email(req.email):
         raise HTTPException(
             status_code=400,
@@ -152,6 +152,58 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
     existing = await db.execute(select(User).where(User.email == req.email))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="该邮箱已被注册")
+
+    code = create_verification_code()
+    expires = datetime.utcnow() + timedelta(minutes=10)
+
+    vc = VerificationCode(email=req.email, code=code, purpose="register", expires_at=expires)
+    db.add(vc)
+    await db.commit()
+
+    email_sent = await send_verification_email(req.email, code)
+    if not email_sent:
+        return {"message": "验证码已生成", "verification_code": code}
+    return {"message": "验证码已发送至你的邮箱"}
+
+
+@app.post("/api/auth/register", response_model=dict)
+async def register(req: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    """用户注册"""
+    if not check_rate_limit("/api/auth/register", request.client.host):
+        raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
+
+    uni = get_university_by_id(req.university_id)
+    if not uni:
+        raise HTTPException(status_code=400, detail="无效的大学ID")
+
+    if not get_university_by_email(req.email):
+        raise HTTPException(
+            status_code=400,
+            detail=f"请使用{uni['name']}的官方邮箱注册（支持域名：{', '.join(uni['email_domains'])}）",
+        )
+
+    # 检查邮箱是否已注册
+    existing = await db.execute(select(User).where(User.email == req.email))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="该邮箱已被注册")
+
+    # 如果提供了验证码，先验证
+    verified = False
+    if req.code:
+        vc_result = await db.execute(
+            select(VerificationCode).where(
+                VerificationCode.email == req.email,
+                VerificationCode.code == req.code,
+                VerificationCode.purpose == "register",
+                VerificationCode.used == False,
+                VerificationCode.expires_at > datetime.utcnow(),
+            ).order_by(VerificationCode.created_at.desc())
+        )
+        vc = vc_result.scalar_one_or_none()
+        if not vc:
+            raise HTTPException(status_code=400, detail="验证码无效或已过期")
+        vc.used = True
+        verified = True
 
     # 检查昵称是否重复
     existing_nick = await db.execute(select(User).where(User.nickname == req.nickname))
@@ -164,33 +216,30 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
         nickname=req.nickname,
         university_id=req.university_id,
         hashed_password=hash_password(req.password),
-        verification_status=StudentVerificationStatus.PENDING.value,
+        verification_status=StudentVerificationStatus.VERIFIED.value if verified else StudentVerificationStatus.PENDING.value,
     )
     db.add(user)
     await db.flush()
 
-    # 生成并发送验证码
-    code = create_verification_code()
-    expires = datetime.utcnow() + timedelta(minutes=10)
+    # 如果未验证，发送验证码
+    code = None
+    if not verified:
+        code = create_verification_code()
+        expires = datetime.utcnow() + timedelta(minutes=10)
+        vc = VerificationCode(email=req.email, code=code, purpose="register", expires_at=expires)
+        db.add(vc)
 
-    vc = VerificationCode(
-        email=req.email,
-        code=code,
-        purpose="register",
-        expires_at=expires,
-    )
-    db.add(vc)
     await db.commit()
 
-    email_sent = await send_verification_email(req.email, code)
+    resp = {"message": "注册成功！", "user": _user_to_brief(user)}
+    if not verified and code:
+        email_sent = await send_verification_email(req.email, code)
+        if not email_sent:
+            resp["verification_code"] = code
+            resp["message"] = "注册成功！邮件发送暂不可用，验证码：" + code
+    if verified:
+        resp["message"] = "注册成功！邮箱已验证，请完成问卷"
 
-    resp = {
-        "message": "注册成功！请查看邮箱验证码完成验证",
-        "user": _user_to_brief(user),
-    }
-    if not email_sent:
-        resp["verification_code"] = code
-        resp["message"] = "邮件发送暂时不可用，你的验证码是：" + code
     return resp
 
 
@@ -236,11 +285,10 @@ async def login(req: LoginRequest, request: Request, db: AsyncSession = Depends(
     if not user or not verify_password(req.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="邮箱或密码错误")
 
-    if user.verification_status == StudentVerificationStatus.PENDING.value:
-        raise HTTPException(status_code=403, detail="请先完成邮箱验证")
-
     if user.verification_status == StudentVerificationStatus.SUSPENDED.value:
         raise HTTPException(status_code=403, detail="你的账号已被冻结")
+
+    is_pending = user.verification_status == StudentVerificationStatus.PENDING.value
 
     access_token = create_access_token(data={"sub": str(user.id)})
     return TokenResponse(

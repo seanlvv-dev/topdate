@@ -17,8 +17,14 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
-      navigate('/matches');
+      const data = await login(email, password);
+      if (data.user.verification_status === 'pending') {
+        navigate('/verify-email');
+      } else if (!data.user.survey_completed) {
+        navigate('/survey');
+      } else {
+        navigate('/matches');
+      }
     } catch (err) {
       setError(err.response?.data?.detail || '登录失败，请检查邮箱和密码');
     } finally {

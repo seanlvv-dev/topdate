@@ -14,11 +14,17 @@ class RegisterRequest(BaseModel):
     university_id: int
     password: str = Field(min_length=6, max_length=100)
     nickname: str = Field(min_length=1, max_length=50)
+    code: Optional[str] = None  # 验证码，如果提供则在注册时验证
 
 
 class VerifyEmailRequest(BaseModel):
     email: str
     code: str = Field(min_length=4, max_length=6)
+
+
+class SendCodeRequest(BaseModel):
+    email: str
+    university_id: int
 
 
 class LoginRequest(BaseModel):
