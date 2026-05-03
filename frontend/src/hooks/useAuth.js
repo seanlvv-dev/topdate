@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api, { setToken, getToken } from '../utils/api';
 
-export function useAuth() {
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,5 +42,15 @@ export function useAuth() {
     setUser(null);
   };
 
-  return { user, loading, login, register, logout, refreshUser: fetchUser };
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser: fetchUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth 必须在 AuthProvider 内使用');
+  return ctx;
 }
