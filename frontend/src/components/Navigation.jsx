@@ -54,7 +54,7 @@ export default function Navigation() {
                 配对局势
               </button>
               <span className="px-3 py-1.5 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed">
-                活动公告
+                📣 活动公告
               </span>
             </div>
           )}
