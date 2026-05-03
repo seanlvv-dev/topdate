@@ -94,10 +94,22 @@ export default function Home() {
               <p className="text-white/50 text-xs tracking-widest mb-3">距下次配对揭晓</p>
               <HeroCountdown />
               <p className="text-white/50 text-xs mt-2">{dateStr} · {timeStr}</p>
-            </div>
           </div>
+          {stats?.top_universities?.length > 0 && (
+            <div className="mt-8 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-700 mb-4">🏫 注册人数最多的高校</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {stats.top_universities.slice(0, 10).map((uni, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className="w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-bold shrink-0">{i + 1}</span>
+                    <span className="text-gray-600 truncate">{uni.university_name}</span>
+                    <span className="text-gray-400 ml-auto text-xs">{uni.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <div className="absolute bottom-0 w-full h-16 bg-gradient-to-t from-white to-transparent" />
       </section>
 
       {/* ====== How It Works ====== */}
