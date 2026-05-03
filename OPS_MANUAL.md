@@ -4,6 +4,19 @@
 
 ---
 
+## 📝 待办清单
+
+| 优先级 | 状态 | 内容 | 怎么做 |
+|:--:|:--:|------|------|
+| 🔴 | ⬜ | **测试完成后清理虚拟用户** | `sudo docker compose exec db psql -U topdate -d topdate -c "DELETE FROM matches WHERE user1_id IN (SELECT id FROM users WHERE email LIKE 'test_%@topdate.test'); DELETE FROM users WHERE email LIKE 'test_%@topdate.test';"` |
+| 🟡 | ⬜ | 正式发布前买域名+服务器 | Cloudflare 买域名（~30元/年），腾讯云续费服务器（~68元/年） |
+| 🟡 | ⬜ | 正式发布前配 HTTPS | 装 Let's Encrypt 或 Cloudflare SSL |
+| 🟢 | ⬜ | 把发送邮箱从 `TopDate@163.com` 换成 `noreply@你的域名` | 改 .env 里的 SMTP_FROM |
+
+> 🔴 = 不做会出事 | 🟡 = 上线前要做 | 🟢 = 锦上添花 | ✅ = 已完成 | ⬜ = 未做
+
+---
+
 ## 📋 版本记录
 
 | 版本 | 日期 | 主要特征 |
