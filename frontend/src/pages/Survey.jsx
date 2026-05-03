@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import api from '../utils/api';
+import api, { getErrorMessage } from '../utils/api';
 
 function SliderQuestion({ question, value, onChange }) {
   const currentVal = value ?? Math.floor((question.min + question.max) / 2);
@@ -132,16 +132,31 @@ export default function Survey() {
 
   useEffect(() => {
     api.get('/survey/questions').then((res) => {
-      setSections(res.data.sections);
+      const secs = res.data.sections;
+      setSections(secs);
       setQuestionsLoading(false);
 
-      // 尝试加载已有答案
+      // 为所有 slider 类型设置默认中间值
+      const defaults = {};
+      secs.forEach((sec) => {
+        sec.questions.forEach((q) => {
+          if (q.type === 'slider') {
+            defaults[q.id] = Math.floor((q.min + q.max) / 2);
+          }
+        });
+      });
+
+      // 加载已有答案（覆盖默认值）
       api.get('/survey/my-answers').then((r) => {
         if (r.data.answers) {
-          setAnswers(r.data.answers);
+          setAnswers({ ...defaults, ...r.data.answers });
           setDistancePref(r.data.answers.max_distance_preference || '');
+        } else {
+          setAnswers((prev) => ({ ...defaults, ...prev }));
         }
-      }).catch(() => {});
+      }).catch(() => {
+        setAnswers((prev) => ({ ...defaults, ...prev }));
+      });
     }).catch(() => setQuestionsLoading(false));
   }, []);
 
@@ -189,7 +204,7 @@ export default function Survey() {
       await refreshUser();
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || '提交失败');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

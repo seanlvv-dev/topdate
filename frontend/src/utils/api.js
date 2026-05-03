@@ -23,6 +23,14 @@ export const setToken = (t) => {
 
 export const getToken = () => token;
 
+export function getErrorMessage(err) {
+  const detail = err?.response?.data?.detail;
+  if (!detail) return '操作失败，请重试';
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) return detail.map((d) => d.msg || JSON.stringify(d)).join('; ');
+  return String(detail);
+}
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
