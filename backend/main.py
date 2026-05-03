@@ -30,7 +30,7 @@ from schemas import (
     MatchCardResponse, MatchActionRequest, StatsResponse,
     ProfileUpdateRequest, AdminActionRequest, UniversityManageRequest,
     ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest,
-    ReportRequest, DeleteAccountRequest, PhotoUploadResponse,
+    ReportRequest, DeleteAccountRequest, PhotoUploadResponse, ChangePasswordRequest,
 )
 from auth import (
     hash_password, verify_password, create_access_token,
@@ -317,6 +317,20 @@ async def login(req: LoginRequest, request: Request, db: AsyncSession = Depends(
 async def get_me(current_user: User = Depends(get_current_user)):
     """获取当前用户信息"""
     return UserBriefResponse(**_user_to_brief(current_user))
+
+
+@app.post("/api/auth/change-password", response_model=dict)
+async def change_password(
+    req: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """修改密码"""
+    if not verify_password(req.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="当前密码错误")
+    current_user.hashed_password = hash_password(req.new_password)
+    await db.commit()
+    return {"message": "密码修改成功"}
 
 
 @app.post("/api/auth/forgot-password", response_model=dict)

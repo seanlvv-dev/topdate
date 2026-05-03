@@ -12,6 +12,10 @@ export default function Profile() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [showChangePwd, setShowChangePwd] = useState(false);
+  const [currentPwd, setCurrentPwd] = useState('');
+  const [newPwd, setNewPwd] = useState('');
+  const [changingPwd, setChangingPwd] = useState(false);
 
   useEffect(() => {
     api.get('/profile').then((res) => {
@@ -44,6 +48,22 @@ export default function Profile() {
       setMessage(err.response?.data?.detail || '删除失败');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPwd.length < 6) { setMessage('新密码至少6位'); return; }
+    setChangingPwd(true);
+    try {
+      await api.post('/auth/change-password', { current_password: currentPwd, new_password: newPwd });
+      setMessage('密码修改成功');
+      setShowChangePwd(false);
+      setCurrentPwd(''); setNewPwd('');
+    } catch (err) {
+      setMessage(err.response?.data?.detail || '修改失败');
+    } finally {
+      setChangingPwd(false);
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
@@ -139,6 +159,40 @@ export default function Profile() {
             <button onClick={() => setEditing(true)} className="btn-outline flex-1">编辑资料</button>
           )}
         </div>
+      </div>
+
+      {/* Change Password */}
+      <div className="card mt-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">🔑 修改密码</h3>
+        {!showChangePwd ? (
+          <button
+            onClick={() => setShowChangePwd(true)}
+            className="text-sm px-4 py-2 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            修改密码
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <input
+              type="password" className="input-field"
+              placeholder="当前密码" value={currentPwd}
+              onChange={(e) => setCurrentPwd(e.target.value)}
+            />
+            <input
+              type="password" className="input-field"
+              placeholder="新密码（至少6位）" value={newPwd}
+              onChange={(e) => setNewPwd(e.target.value)}
+            />
+            <div className="flex gap-3">
+              <button onClick={() => { setShowChangePwd(false); setCurrentPwd(''); setNewPwd(''); }}
+                className="btn-outline flex-1 !py-2">取消</button>
+              <button onClick={handleChangePassword}
+                className="btn-primary flex-1 !py-2" disabled={changingPwd || !currentPwd || !newPwd}>
+                {changingPwd ? '修改中...' : '确认修改'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Danger zone */}
