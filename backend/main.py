@@ -231,6 +231,7 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
         email=req.email,
         nickname=req.nickname,
         university_id=req.university_id,
+        department=req.department or "",
         hashed_password=hash_password(req.password),
         verification_status=StudentVerificationStatus.VERIFIED.value if verified else StudentVerificationStatus.PENDING.value,
     )

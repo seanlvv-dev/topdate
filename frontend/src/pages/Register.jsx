@@ -10,6 +10,7 @@ export default function Register() {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
+  const [department, setDepartment] = useState('');
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [sendingCode, setSendingCode] = useState(false);
@@ -74,6 +75,7 @@ export default function Register() {
         university_id: parseInt(universityId),
         password,
         nickname,
+        department,
         code,
       });
       if (res.verification_code) {
@@ -171,6 +173,18 @@ export default function Register() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               maxLength={50}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">院系</label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="如：计算机科学与技术学院"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              maxLength={100}
             />
           </div>
 

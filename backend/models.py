@@ -70,6 +70,7 @@ class User(Base):
 
     is_admin = Column(Boolean, default=False)
     is_active_matching = Column(Boolean, default=True)  # 是否参与本周匹配
+    department = Column(String(100), default="")  # 院系
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
