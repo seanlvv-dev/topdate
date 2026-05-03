@@ -28,7 +28,6 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       setToken(null);
-      window.location.href = '/login';
     }
     return Promise.reject(err);
   }
