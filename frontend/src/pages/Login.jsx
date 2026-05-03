@@ -23,7 +23,7 @@ export default function Login() {
       } else if (!data.user.survey_completed) {
         navigate('/survey');
       } else {
-        navigate('/matches');
+        navigate('/');
       }
     } catch (err) {
       setError(err.response?.data?.detail || '登录失败，请检查邮箱和密码');

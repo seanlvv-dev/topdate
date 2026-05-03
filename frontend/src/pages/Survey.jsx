@@ -187,7 +187,7 @@ export default function Survey() {
         answers: { ...answers, max_distance_preference: distancePref },
       });
       await refreshUser();
-      navigate('/matches');
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.detail || '提交失败');
     } finally {
