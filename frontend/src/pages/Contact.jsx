@@ -20,13 +20,6 @@ export default function Contact() {
               </a>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="w-8 h-8 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-sm shrink-0">💬</span>
-            <div>
-              <p className="text-xs text-gray-400">微信</p>
-              <p className="text-gray-700 font-medium">lvjiaxuan325</p>
-            </div>
-          </div>
         </div>
 
         <p className="text-xs text-gray-400 mt-4">

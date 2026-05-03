@@ -19,7 +19,12 @@ export default function About() {
           隐私与真诚是 TopDate 的核心原则——邮箱地址仅在双向确认匹配后才会交换，
           所有问卷数据仅用于匹配计算，绝不会向第三方泄露。
         </p>
-        <div className="border-t border-gray-100 pt-4 mt-4">
+          <p>
+            TopDate 是一个<strong>纯公益项目</strong>，不向用户收取任何费用，
+            不投放商业广告，不进行任何形式的商业变现。
+            我们仅通过算法为高校学生提供匹配建议，所有服务永久免费。
+          </p>
+          <div className="border-t border-gray-100 pt-4 mt-4">
           <p className="text-xs text-gray-400">
             TopDate 不隶属于任何大学。平台仅供在校学生自愿使用。
           </p>
