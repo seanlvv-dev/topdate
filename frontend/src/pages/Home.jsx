@@ -71,11 +71,9 @@ export default function Home() {
               Join {stats?.total_users?.toLocaleString() || '0'} students
             </p>
             <h1 className="text-3xl md:text-5xl font-black leading-tight mb-4">
-              五湖四海<br /><span className="text-white/90">于此相逢</span>
+              在<span className="text-white/90">985</span>校园里
+              <br />找到与你<span className="text-white/90">同频</span>的人
             </h1>
-            <p className="text-white/70 text-base md:text-lg mb-2 max-w-md mx-auto leading-relaxed">
-              For *.edu.cn
-            </p>
             <p className="text-white/60 text-sm max-w-md mx-auto leading-relaxed mb-8">
               只需填写一份深度问卷，每周三和周六晚六点，
               <br />你将收到匹配结果，并附上我们认为你们会合拍的理由。
@@ -161,21 +159,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====== Quotes ====== */}
-      <section className="py-20 bg-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <p className="text-lg text-gray-700 font-medium leading-relaxed mb-12">
-            认真的匹配，比随机的相遇<br />更有可能带来长久的关系。
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400">
+      {/* ====== Stats ====== */}
+      <section className="py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="text-center text-2xl font-bold mb-8">平台数据一览</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
-              { emoji: '💌', text: '不是左滑右滑的快餐社交，而是一封每周等待拆开的信。' },
-              { emoji: '🔬', text: '45 道深度题目，让算法真正理解你在乎什么。' },
-              { emoji: '🏫', text: '覆盖 39 所 985 高校，从北京到上海，从西安到广州，缘分不远。' },
-            ].map((item, i) => (
-              <div key={i} className="card text-center">
-                <div className="text-2xl mb-2">{item.emoji}</div>
-                <p className="leading-relaxed">{item.text}</p>
+              { label: '已注册', value: stats?.total_users?.toLocaleString() || '0', icon: '👥' },
+              { label: '成功匹配', value: stats?.total_match_pairs?.toLocaleString() || '0', icon: '💕' },
+              { label: '匹配率', value: (stats?.match_success_rate || 0) + '%', icon: '📊' },
+              { label: '本周活跃', value: stats?.active_users_this_week?.toLocaleString() || '0', icon: '🔥' },
+              { label: '覆盖高校', value: stats?.total_universities || 39, icon: '🏫' },
+            ].map((item) => (
+              <div key={item.label} className="card text-center">
+                <div className="text-2xl mb-1">{item.icon}</div>
+                <div className="text-xl font-bold gradient-text">{item.value}</div>
+                <div className="text-xs text-gray-400">{item.label}</div>
               </div>
             ))}
           </div>
@@ -201,27 +200,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====== Stats ====== */}
-      <section className="py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-center text-2xl font-bold mb-8">平台数据一览</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {[
-              { label: '已注册', value: stats?.total_users?.toLocaleString() || '0', icon: '👥' },
-              { label: '成功匹配', value: stats?.total_match_pairs?.toLocaleString() || '0', icon: '💕' },
-              { label: '匹配率', value: (stats?.match_success_rate || 0) + '%', icon: '📊' },
-              { label: '本周活跃', value: stats?.active_users_this_week?.toLocaleString() || '0', icon: '🔥' },
-              { label: '覆盖高校', value: stats?.total_universities || 39, icon: '🏫' },
-            ].map((item) => (
-              <div key={item.label} className="card text-center">
-                <div className="text-2xl mb-1">{item.icon}</div>
-                <div className="text-xl font-bold gradient-text">{item.value}</div>
-                <div className="text-xs text-gray-400">{item.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
