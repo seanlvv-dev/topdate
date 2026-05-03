@@ -28,10 +28,15 @@ def _send_email_sync(to_email: str, subject: str, html_content: str) -> bool:
         msg["To"] = to_email
         msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.SMTP_FROM, [to_email], msg.as_string())
+        if settings.SMTP_PORT == 465:
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.SMTP_FROM, [to_email], msg.as_string())
+        else:
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.SMTP_FROM, [to_email], msg.as_string())
         logger.info(f"邮件已发送: {to_email}")
         return True
     except Exception as e:
