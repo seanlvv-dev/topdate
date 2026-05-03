@@ -191,7 +191,7 @@ export default function Survey() {
     }
     setMissingCount(0);
     setHighlightedFields([]);
-    if (currentSection < sections.length - 1) {
+    if (currentSection < sections.length) {
       setCurrentSection(currentSection + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
