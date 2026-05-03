@@ -21,7 +21,9 @@ class Settings(BaseSettings):
     MATCHING_CRON_DAY: int = 2  # Wednesday (0=Monday, ..., 6=Sunday)
     MATCHING_CRON_HOUR: int = 18
     MATCHING_CRON_MINUTE: int = 0
-    TOP_MATCHES_PER_USER: int = 5
+    MATCHING_SATURDAY_HOUR: int = 18
+    MATCHING_SATURDAY_MINUTE: int = 0
+    TOP_MATCHES_PER_USER: int = 1
 
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 

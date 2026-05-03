@@ -15,12 +15,22 @@ const POEMS = [
 
 function getNextMatchTime() {
   const now = new Date();
-  const target = new Date(now);
-  let daysUntil = (3 - now.getDay() + 7) % 7;
-  if (daysUntil === 0 && now.getHours() >= 18) daysUntil = 7;
-  target.setDate(now.getDate() + daysUntil);
-  target.setHours(18, 0, 0, 0);
-  return target;
+  const targets = [];
+  // 周三 18:00
+  const wed = new Date(now);
+  let daysUntilWed = (3 - now.getDay() + 7) % 7;
+  if (daysUntilWed === 0 && now.getHours() >= 18) daysUntilWed = 7;
+  wed.setDate(now.getDate() + daysUntilWed);
+  wed.setHours(18, 0, 0, 0);
+  targets.push(wed);
+  // 周六 18:00
+  const sat = new Date(now);
+  let daysUntilSat = (6 - now.getDay() + 7) % 7;
+  if (daysUntilSat === 0 && now.getHours() >= 18) daysUntilSat = 7;
+  sat.setDate(now.getDate() + daysUntilSat);
+  sat.setHours(18, 0, 0, 0);
+  targets.push(sat);
+  return targets.sort((a, b) => a - b)[0];
 }
 
 function Countdown() {
@@ -167,7 +177,7 @@ export default function Dashboard() {
                 {activeMatches.length > 0 ? `${pendingCount} 个待查看` : '暂无新匹配'}
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                {activeMatches.length > 0 ? '周三晚 18:00 已揭晓' : '等待下周三揭晓'}
+                {activeMatches.length > 0 ? '周三/周六 18:00 已揭晓' : '等待下次配对揭晓'}
               </p>
             </>
           ) : (
@@ -320,7 +330,7 @@ export default function Dashboard() {
               <div className="text-4xl mb-4">🌙</div>
               <p className="text-sm text-gray-500">还没有配对记录</p>
               <p className="text-xs text-gray-300 mt-1">
-                {hasSurvey ? '等待下周三配对揭晓' : '完成问卷并参与本期配对，周三晚 18:00 揭晓！'}
+                {hasSurvey ? '等待下次配对揭晓' : '完成问卷并参与本期配对，周三/周六 18:00 揭晓！'}
               </p>
             </div>
           )
@@ -328,7 +338,7 @@ export default function Dashboard() {
           <div className="card py-12 text-center">
             <div className="text-4xl mb-4">🌙</div>
             <p className="text-sm text-gray-500">还没有配对记录</p>
-            <p className="text-xs text-gray-300 mt-1">完成问卷并参与本期配对，周三晚 18:00 揭晓！</p>
+            <p className="text-xs text-gray-300 mt-1">完成问卷并参与本期配对，周三/周六 18:00 揭晓！</p>
           </div>
         )}
       </section>
@@ -371,7 +381,7 @@ export default function Dashboard() {
         <SectionTitle>常见问题</SectionTitle>
         <div className="space-y-2">
           {[
-            { q: '匹配多久进行一次？', a: '每周固定时间统一匹配一次。' },
+            { q: '匹配多久进行一次？', a: '每周三和周六 18:00 各匹配一次。' },
             { q: '如果我这周没匹配成功怎么办？', a: '你会自动进入下一个匹配周期。' },
             { q: '我的问卷可以修改吗？', a: '可以，重新提交问卷会覆盖当前模板下的答案。' },
           ].map((faq, i) => (

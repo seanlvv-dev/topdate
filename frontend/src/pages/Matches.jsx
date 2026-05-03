@@ -119,7 +119,7 @@ export default function Matches() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold">我的匹配</h1>
-        <p className="text-gray-400 mt-1">每周三18:00更新匹配结果，记得来看哦</p>
+        <p className="text-gray-400 mt-1">周三 / 周六 18:00 更新匹配结果，记得来看哦</p>
       </div>
 
       {loading ? (

@@ -92,7 +92,7 @@ export default function Home() {
             {[
               { step: '1', icon: '📝', title: '注册账号', desc: '使用你的985高校邮箱注册' },
               { step: '2', icon: '📋', title: '填写问卷', desc: '完成5个部分的趣味问卷' },
-              { step: '3', icon: '💫', title: '等待匹配', desc: '每周三18:00生成匹配结果' },
+              { step: '3', icon: '💫', title: '等待匹配', desc: '周三/周六 18:00 生成匹配结果' },
               { step: '4', icon: '💕', title: '双向确认', desc: '互相喜欢即可获得联系方式' },
             ].map((item) => (
               <div key={item.step} className="text-center">
