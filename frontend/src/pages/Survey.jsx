@@ -166,7 +166,7 @@ export default function Survey() {
 
   const isSectionComplete = (section) => {
     return section.questions.every((q) => {
-      if (!q.required) return true;
+      if (q.required === false) return true;
       const val = answers[q.id];
       if (val === undefined || val === null || val === '') return false;
       if (Array.isArray(val) && val.length === 0) return false;
