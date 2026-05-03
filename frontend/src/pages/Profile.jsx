@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
 
@@ -9,11 +9,9 @@ export default function Profile() {
   const [form, setForm] = useState({ nickname: '', bio: '' });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
-  const fileInputRef = useRef(null);
 
   useEffect(() => {
     api.get('/profile').then((res) => {
@@ -34,41 +32,6 @@ export default function Profile() {
       setMessage(err.response?.data?.detail || '更新失败');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    setUploading(true);
-    try {
-      await api.post('/profile/upload-photo', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const res = await api.get('/profile');
-      setProfile(res.data);
-      setMessage('照片上传成功');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      setMessage(err.response?.data?.detail || '上传失败');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handlePhotoDelete = async (url) => {
-    try {
-      await api.delete('/profile/photo', { params: { url } });
-      const res = await api.get('/profile');
-      setProfile(res.data);
-      setMessage('照片已删除');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      setMessage(err.response?.data?.detail || '删除失败');
     }
   };
 
@@ -162,74 +125,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Photos */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-500 mb-2">照片 ({profile.photos?.length || 0}/3)</h3>
-          <div className="flex gap-3 flex-wrap">
-            {profile.photos?.map((url, i) => (
-              <div key={i} className="relative group">
-                <div className="w-24 h-24 bg-gray-100 rounded-2xl overflow-hidden">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                </div>
-                <button
-                  onClick={() => handlePhotoDelete(url)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-            {(!profile.photos || profile.photos.length < 3) && (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="w-24 h-24 bg-gray-50 rounded-2xl flex items-center justify-center text-2xl text-gray-300 border-2 border-dashed border-gray-200 hover:border-primary-300 hover:text-primary-400 transition-colors cursor-pointer"
-              >
-                {uploading ? (
-                  <div className="animate-spin w-6 h-6 border-2 border-primary-300 border-t-primary-600 rounded-full" />
-                ) : '+'}
-              </button>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp"
-            className="hidden"
-            onChange={handlePhotoUpload}
-          />
-          <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP 格式，单张最大 5MB</p>
-        </div>
-
-        {/* Answers summary */}
-        {profile.survey_answers && (
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">问卷概览</h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <span className="text-gray-400">性别：</span>
-                <span>{profile.survey_answers.gender === 'male' ? '男' : '女'}</span>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <span className="text-gray-400">年龄：</span>
-                <span>{profile.survey_answers.age || '-'}岁</span>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <span className="text-gray-400">家乡：</span>
-                <span>{profile.survey_answers.home_province || '-'}</span>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <span className="text-gray-400">匹配范围：</span>
-                <span>{{
-                  same_city: '仅同城',
-                  same_province: '同省',
-                  neighboring: '邻省',
-                  anywhere: '不限',
-                }[profile.survey_answers.max_distance_preference] || '-'}</span>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Actions */}
         <div className="flex gap-3 pt-4 border-t border-gray-100">
