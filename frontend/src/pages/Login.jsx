@@ -20,8 +20,6 @@ export default function Login() {
       const data = await login(email, password);
       if (data.user.verification_status === 'pending') {
         navigate('/verify-email');
-      } else if (!data.user.survey_completed) {
-        navigate('/survey');
       } else {
         navigate('/');
       }
