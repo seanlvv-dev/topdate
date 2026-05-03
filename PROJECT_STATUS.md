@@ -65,4 +65,6 @@
 | 05.03 | 忘记密码/修改密码/重发验证码/账号删除/举报 | 全部新增 API + 前端页面 |
 | 05.03 | 用户要求文档精简为两份 | `PROJECT_STATUS.md` 给AI读（服务器/配置/通信摘要），`OPS_MANUAL.md` 给用户读（版本记录+回退方法） |
 | 05.03 | 创建20人匹配算法测试脚本 | `backend/test_matching.py`，独立脚本不修改任何代码。测试用户用假邮箱 `test_*@topdate.test`，测完需手动清理数据库 |
+| 05.03 | OPS_MANUAL.md 新增待办清单+优先级分级 | 🔴清理测试用户/🟡买域名服务器/🟢换发件邮箱，带操作命令 |
+| 05.03 | 注册表单新增院系字段 | 后端 models/schemas/main.py 加 `department` 字段，前端自由填写 |
 | 05.03 | 标记稳定版 v1.0 | `git tag v1.0-stable`，已在 GitHub 和 OPS_MANUAL.md 记录 |
