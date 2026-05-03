@@ -28,12 +28,13 @@ SECTION_WEIGHTS = {
     "future": 0.15,             # 未来规划
 }
 
-# 距离偏好奖励
-DISTANCE_BONUS = {
-    "same_city": 20.0,
-    "same_province": 12.0,
-    "neighboring": 6.0,
-    "anywhere": 0.0,
+# 地理位置乘法系数（替代加法加分，避免同城全部满分）
+# 参考 OKCupid 的距离衰减模型：近距离 ≈ 概率×1.15，远距离 ≈ 概率×0.85
+LOCATION_MULTIPLIER = {
+    "same_city": 1.15,       # 同城：相似度提升15%
+    "same_province": 1.08,   # 同省：提升8%
+    "neighboring": 1.04,     # 邻省：提升4%
+    "far": 0.92,             # 远距：微降8%
 }
 
 # 互补性权重（适中，因为研究发现相似性更重要）
@@ -243,49 +244,37 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
     total_similarity = sum(scores[k] * weights[k] for k in scores)
     total_similarity = min(1.0, max(0.0, total_similarity))
 
-    # === 城市/距离奖励分 ===
+    # === 地理位置乘法系数 ===
     uni_a_id = user_a.get("university_id")
     uni_b_id = user_b.get("university_id")
-    city_bonus = 0.0
 
-    # 检查用户A的距离偏好
     max_dist_a = user_a.get("max_distance_preference", "anywhere")
     max_dist_b = user_b.get("max_distance_preference", "anywhere")
 
+    location_mult = LOCATION_MULTIPLIER["far"]
     if is_same_city(uni_a_id, uni_b_id):
-        city_bonus = DISTANCE_BONUS["same_city"]
+        location_mult = LOCATION_MULTIPLIER["same_city"]
     elif is_same_province(uni_a_id, uni_b_id):
-        city_bonus = DISTANCE_BONUS["same_province"]
+        location_mult = LOCATION_MULTIPLIER["same_province"]
     elif is_neighboring_province(uni_a_id, uni_b_id):
-        city_bonus = DISTANCE_BONUS["neighboring"]
+        location_mult = LOCATION_MULTIPLIER["neighboring"]
 
-    # 检查距离偏好约束
+    # 距离偏好约束：超出用户设定的距离偏好时降权
     dist_a_level = QUOTA_PREFERENCE_MAP.get(max_dist_a, 3)
     dist_b_level = QUOTA_PREFERENCE_MAP.get(max_dist_b, 3)
 
-    actual_level = 0
-    if is_same_city(uni_a_id, uni_b_id):
-        actual_level = 1
-    elif is_same_province(uni_a_id, uni_b_id):
+    actual_level = 3
+    if is_same_city(uni_a_id, uni_b_id) or is_same_province(uni_a_id, uni_b_id):
         actual_level = 1
     elif is_neighboring_province(uni_a_id, uni_b_id):
         actual_level = 2
-    else:
-        actual_level = 3
 
     if actual_level > dist_a_level or actual_level > dist_b_level:
-        # 超出至少一方的距离偏好，但不过滤（给低分而非阻止）
-        city_bonus *= 0.3
+        location_mult *= 0.85  # 超出距离偏好，额外削减 15%
 
-    # 最终得分
-    raw_score = total_similarity * 100.0
-
-    # 相似度达到一定水平时放大同城加分（让同城优质匹配优先胜出）
-    if total_similarity >= 0.40 and city_bonus > 0:
-        amplify = 1.5  # 同城20→30, 同省12→18, 邻省6→9
-        city_bonus = round(city_bonus * amplify, 1)
-
-    final_score = min(100.0, raw_score + city_bonus)
+    # === 最终得分：乘法融合 ===
+    raw_score = total_similarity * 100.0 * location_mult
+    final_score = min(100.0, round(raw_score, 1))
 
     uni_a = get_university_by_id(uni_a_id)
     uni_b = get_university_by_id(uni_b_id)
@@ -293,8 +282,7 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
     return {
         "overall_score": round(final_score, 1),
         "similarity_score": round(total_similarity * 100.0, 1),
-        "city_bonus": round(city_bonus, 1),
-        "detail_scores": {k: round(v * 100, 1) for k, v in scores.items()},
+        "city_bonus": 0.0,
         "detail_scores": {**{k: round(v * 100, 1) for k, v in scores.items()}, "_similarity": round(total_similarity * 100.0, 1)},
         "same_city": is_same_city(uni_a_id, uni_b_id),
         "same_province": is_same_province(uni_a_id, uni_b_id),

@@ -61,11 +61,6 @@ function MatchCard({ match, onAction }) {
         <div className="text-center">
           <div className={`text-2xl font-bold ${scoreColor}`}>{match.compatibility_score}%</div>
           <div className="text-xs text-gray-400 mt-0.5">匹配度</div>
-          {match.city_bonus > 0 && (
-            <div className="text-[10px] text-accent-600 mt-0.5">
-              其中地域+{match.city_bonus}
-            </div>
-          )}
         </div>
       </div>
 

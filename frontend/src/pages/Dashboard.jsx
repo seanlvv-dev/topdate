@@ -305,16 +305,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <span className={`text-sm font-bold ${m.compatibility_score >= 80 ? 'text-green-500' : 'text-primary-500'}`}>
-                        {m.compatibility_score}%
-                      </span>
-                      {m.compatibility_score - (m.detail_scores?._similarity || 0) > 0 && (
-                        <div className="text-[10px] text-gray-400">
-                          {m.detail_scores?._similarity || '—'}%+{m.compatibility_score - (m.detail_scores?._similarity || 0)}
-                        </div>
-                      )}
-                    </div>
+                    <span className={`text-sm font-bold ${m.compatibility_score >= 80 ? 'text-green-500' : 'text-primary-500'}`}>
+                      {m.compatibility_score}%
+                    </span>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                       m.status === 'matched' ? 'bg-pink-50 text-pink-600'
                       : m.status === 'liked' ? 'bg-primary-50 text-primary-600'
