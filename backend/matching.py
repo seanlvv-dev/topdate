@@ -280,6 +280,12 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
 
     # 最终得分
     raw_score = total_similarity * 100.0
+
+    # 相似度达到一定水平时放大同城加分（让同城优质匹配优先胜出）
+    if total_similarity >= 0.40 and city_bonus > 0:
+        amplify = 1.5  # 同城20→30, 同省12→18, 邻省6→9
+        city_bonus = round(city_bonus * amplify, 1)
+
     final_score = min(100.0, raw_score + city_bonus)
 
     uni_a = get_university_by_id(uni_a_id)
