@@ -23,7 +23,7 @@ export default function Navigation() {
       const el = document.getElementById('stats-section');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     } else {
-      window.location.href = '/?scroll=stats';
+      window.location.href = '/#stats';
     }
   };
 

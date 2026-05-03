@@ -75,7 +75,7 @@ function SectionTitle({ children }) {
   );
 }
 
-export default function Dashboard({ scrollTo }) {
+export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { stats } = useStats();
   const navigate = useNavigate();
@@ -85,10 +85,11 @@ export default function Dashboard({ scrollTo }) {
   const hasSurvey = user?.survey_completed;
 
   useEffect(() => {
-    if (scrollTo === 'stats' && statsRef.current) {
+    if (window.location.hash === '#stats' && statsRef.current) {
       statsRef.current.scrollIntoView({ behavior: 'smooth' });
+      window.location.hash = '';
     }
-  }, [scrollTo]);
+  }, []);
 
   useEffect(() => {
     if (!user || !hasSurvey) return;
