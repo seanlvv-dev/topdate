@@ -62,13 +62,17 @@ def _slider_complementarity(a: int, b: int, min_val: int = 1, max_val: int = 7) 
 
 
 def _categorical_similarity(a, b, allow_partial: bool = True) -> float:
-    """计算类别相似度"""
+    """计算类别相似度，any/都行/不限 视为通配符（总是匹配）"""
     if a is None or b is None:
         return 0.5
+    wildcards = {"any", "all", "都行", "不限", "都可以", "无限制", "All good"}
+    if isinstance(a, str) and a.strip() in wildcards:
+        return 1.0
+    if isinstance(b, str) and b.strip() in wildcards:
+        return 1.0
     if a == b:
         return 1.0
     if allow_partial and isinstance(a, str) and isinstance(b, str):
-        # 简单的部分匹配：如果字符串包含
         if a in b or b in a:
             return 0.5
     return 0.0
@@ -145,12 +149,7 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
         grad_diff = abs(grad_a - grad_b)
         grad_sim = max(0.0, 1.0 - grad_diff / 10.0)
         s1 += grad_sim * 0.10
-    # 身高范围
-    s1 += _age_range_penalty(
-        0, user_a.get("height_range_min"), user_a.get("height_range_max"),
-        0, user_b.get("height_range_min"), user_b.get("height_range_max"),
-    ) * 0.10  # 复用函数，用height作age
-    # 修正：身高范围单独处理
+    # 身高匹配
     a_h = user_a.get("height")
     a_hmin = user_a.get("height_range_min")
     a_hmax = user_a.get("height_range_max")
@@ -164,7 +163,7 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
     if b_hmin and b_hmax and a_h:
         if a_h < b_hmin or a_h > b_hmax:
             height_ok *= 0.5
-    s1 += height_ok * 0.10
+    s1 += height_ok * 0.15
     # 家乡省份
     s1 += (1.0 if user_a.get("home_province") == user_b.get("home_province") else 0.0) * 0.05
     # 体型偏好
@@ -296,6 +295,7 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
         "similarity_score": round(total_similarity * 100.0, 1),
         "city_bonus": round(city_bonus, 1),
         "detail_scores": {k: round(v * 100, 1) for k, v in scores.items()},
+        "detail_scores": {**{k: round(v * 100, 1) for k, v in scores.items()}, "_similarity": round(total_similarity * 100.0, 1)},
         "same_city": is_same_city(uni_a_id, uni_b_id),
         "same_province": is_same_province(uni_a_id, uni_b_id),
         "blocked": False,
