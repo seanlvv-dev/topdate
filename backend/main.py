@@ -44,7 +44,7 @@ from universities import (
     is_same_city, is_same_province,
 )
 from matching import compute_match_score
-from tasks import run_wednesday_matching, run_saturday_matching, cleanup_expired_matches
+from tasks import run_tuesday_matching, run_saturday_matching, cleanup_expired_matches
 from rate_limiter import check_rate_limit
 
 logging.basicConfig(level=logging.INFO)
@@ -64,14 +64,14 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 async def lifespan(app: FastAPI):
     """应用生命周期"""
     await init_db()
-    # 设置每周三18:00 + 每周六18:00的定时任务
+    # 设置每周二18:00 + 每周六18:00的定时任务
     scheduler.add_job(
-        run_wednesday_matching,
+        run_tuesday_matching,
         "cron",
-        day_of_week="wed",
+        day_of_week="tue",
         hour=settings.MATCHING_CRON_HOUR,
         minute=settings.MATCHING_CRON_MINUTE,
-        id="wednesday_matching",
+        id="tuesday_matching",
         replace_existing=True,
     )
     scheduler.add_job(
@@ -86,9 +86,9 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         cleanup_expired_matches,
         "cron",
-        day_of_week="wed",
+        day_of_week="tue",
         hour=19, minute=0,
-        id="cleanup_wednesday",
+        id="cleanup_tuesday",
         replace_existing=True,
     )
     scheduler.add_job(

@@ -80,7 +80,7 @@ export default function Home() {
               <br />找到与你<span className="text-white">同频</span>的人
             </h1>
             <p className="text-white/60 text-sm max-w-md mx-auto leading-relaxed mb-8">
-              只需填写一份深度问卷，每周三和周六晚六点，
+              只需填写一份深度问卷，每周二和周六晚六点，
               <br />你将收到匹配结果，并附上我们认为你们会合拍的理由。
             </p>
             <div className="flex gap-4 justify-center">
@@ -132,7 +132,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
               { step: '01', title: '填写一份深度问卷', desc: '45 道题，涵盖价值观、情感风格和生活方式。从华北到华南，从华东到西北，认真回答，让算法找到最契合你的人。', icon: '📋', color: 'from-rose-100 to-rose-50' },
-              { step: '02', title: '每周两次，打开信封', desc: '周三和周六晚六点，收到对方的昵称、匹配度，以及每个维度的契合分析。一周两次，没有「左滑右滑」。', icon: '💌', color: 'from-amber-100 to-amber-50' },
+              { step: '02', title: '每周两次，打开信封', desc: '周二和周六晚六点，收到对方的昵称、匹配度，以及每个维度的契合分析。一周两次，没有「左滑右滑」。', icon: '💌', color: 'from-amber-100 to-amber-50' },
               { step: '03', title: '双向确认后，见见TA吧', desc: '互相喜欢后交换联系方式。剩下的交给你们：或许在校园散步，或许一起去图书馆。', icon: '💕', color: 'from-rose-100 to-amber-50' },
             ].map((item) => (
               <div key={item.step} className="relative group">
@@ -158,7 +158,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
             {[
-              { icon: '🎯', title: '每周两次', desc: '周三和周六晚六点统一揭晓。用心等待，而非无尽刷屏。' },
+              { icon: '🎯', title: '每周两次', desc: '周二和周六晚六点统一揭晓。用心等待，而非无尽刷屏。' },
               { icon: '💡', title: '精准匹配', desc: '基于价值观、情感风格与生活方式的契合度算法，不只看相似，也捕捉互补。' },
               { icon: '🔒', title: '隐私优先', desc: '不是公开社交平台。你只能看到与自己有关的匹配信息。' },
               { icon: '🎓', title: '覆盖39校', desc: '仅支持 985 高校 .edu.cn 邮箱注册，守护校园的那份真实。' },

@@ -18,11 +18,11 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "noreply@topdate.cn"
 
-    MATCHING_CRON_DAY: int = 2  # Wednesday (0=Monday, ..., 6=Sunday)
-    MATCHING_CRON_HOUR: int = 17  # 17:50 提前十分钟跑
-    MATCHING_CRON_MINUTE: int = 50
+    MATCHING_CRON_DAY: int = 1  # Tuesday (0=Monday, 1=Tuesday, ..., 6=Sunday)
+    MATCHING_CRON_HOUR: int = 17  # 17:30 提前半小时跑
+    MATCHING_CRON_MINUTE: int = 30
     MATCHING_SATURDAY_HOUR: int = 17
-    MATCHING_SATURDAY_MINUTE: int = 50
+    MATCHING_SATURDAY_MINUTE: int = 30
     TOP_MATCHES_PER_USER: int = 1
     SITE_URL: str = "http://111.229.36.34:3000"
 

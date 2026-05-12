@@ -146,9 +146,9 @@ async def run_matching(label="匹配"):
         logger.info(f"=== {label}任务完成 ===\n")
 
 
-async def run_wednesday_matching():
-    """周三匹配"""
-    await run_matching("周三匹配")
+async def run_tuesday_matching():
+    """周二匹配"""
+    await run_matching("周二匹配")
 
 
 async def run_saturday_matching():
