@@ -111,6 +111,13 @@ def _age_range_penalty(
     return 0.0
 
 
+def _imp_weight(ua: dict, ub: dict, qid: str, base: float) -> float:
+    """如果任一用户标记该题为重要，权重翻倍"""
+    if ua.get(f"_imp_{qid}") or ub.get(f"_imp_{qid}"):
+        return base * 2.0
+    return base
+
+
 def compute_match_score(user_a: dict, user_b: dict) -> dict:
     """
     计算两个用户之间的匹配分数
@@ -136,21 +143,17 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
 
     # === Part 1: First Impressions ===
     s1 = 0.0
-    # 关系期望 (categorical)
-    s1 += _categorical_similarity(user_a.get("relationship_expectation"), user_b.get("relationship_expectation")) * 0.10
-    # 年龄范围匹配
+    s1 += _categorical_similarity(user_a.get("relationship_expectation"), user_b.get("relationship_expectation")) * _imp_weight(ua, ub, "relationship_expectation", 0.10)
     s1 += _age_range_penalty(
         user_a.get("age"), user_a.get("age_range_min"), user_a.get("age_range_max"),
         user_b.get("age"), user_b.get("age_range_min"), user_b.get("age_range_max"),
-    ) * 0.15
-    # 毕业年份偏好
+    ) * _imp_weight(ua, ub, "age", 0.15)
     grad_a = user_a.get("graduation_year")
     grad_b = user_b.get("graduation_year")
     if grad_a and grad_b:
         grad_diff = abs(grad_a - grad_b)
         grad_sim = max(0.0, 1.0 - grad_diff / 10.0)
-        s1 += grad_sim * 0.10
-    # 身高匹配
+        s1 += grad_sim * _imp_weight(ua, ub, "graduation_year", 0.10)
     a_h = user_a.get("height")
     a_hmin = user_a.get("height_range_min")
     a_hmax = user_a.get("height_range_max")
@@ -159,83 +162,72 @@ def compute_match_score(user_a: dict, user_b: dict) -> dict:
     b_hmax = user_b.get("height_range_max")
     height_ok = 1.0
     if a_hmin and a_hmax and b_h:
-        if b_h < a_hmin or b_h > a_hmax:
-            height_ok *= 0.5
+        if b_h < a_hmin or b_h > a_hmax: height_ok *= 0.5
     if b_hmin and b_hmax and a_h:
-        if a_h < b_hmin or a_h > b_hmax:
-            height_ok *= 0.5
-    s1 += height_ok * 0.15
-    # 家乡省份
-    s1 += (1.0 if user_a.get("home_province") == user_b.get("home_province") else 0.0) * 0.05
-    # 体型偏好
-    s1 += _categorical_similarity(user_a.get("prefer_body_type"), user_b.get("body_type"), allow_partial=False) * 0.15
-    s1 += _categorical_similarity(user_b.get("prefer_body_type"), user_a.get("body_type"), allow_partial=False) * 0.10
-    # 穿搭风格
-    s1 += _categorical_similarity(user_a.get("prefer_daily_style"), user_b.get("daily_style")) * 0.15
+        if a_h < b_hmin or a_h > b_hmax: height_ok *= 0.5
+    s1 += height_ok * _imp_weight(ua, ub, "height", 0.15)
+    s1 += (1.0 if user_a.get("home_province") == user_b.get("home_province") else 0.0) * _imp_weight(ua, ub, "home_province", 0.05)
+    s1 += _categorical_similarity(user_a.get("prefer_body_type"), user_b.get("body_type"), allow_partial=False) * _imp_weight(ua, ub, "body_type", 0.15)
+    s1 += _categorical_similarity(user_b.get("prefer_body_type"), user_a.get("body_type"), allow_partial=False) * _imp_weight(ua, ub, "prefer_body_type", 0.10)
+    s1 += _categorical_similarity(user_a.get("prefer_daily_style"), user_b.get("daily_style")) * _imp_weight(ua, ub, "daily_style", 0.15)
 
     scores["first_impression"] = s1
     weights["first_impression"] = SECTION_WEIGHTS["first_impression"]
 
     # === Part 2: Attraction ===
     s2 = 0.0
-    # 社交风格（倾向相似）
-    s2 += _slider_similarity(user_a.get("social_setting"), user_b.get("social_setting")) * 0.20
-    # 爱的语言
-    s2 += _list_overlap(user_a.get("love_languages", []), user_b.get("love_languages", [])) * 0.20
-    # 仪式感重要性
-    s2 += _slider_similarity(user_a.get("ritual_importance"), user_b.get("ritual_importance")) * 0.15
-    # 外貌重视程度
-    s2 += _slider_similarity(user_a.get("appearance_effort"), user_b.get("appearance_effort")) * 0.15
-    # 自我特质 vs 对方看重特质
-    s2 += _list_overlap(user_a.get("self_traits", []), user_b.get("partner_traits", [])) * 0.15
-    s2 += _list_overlap(user_b.get("self_traits", []), user_a.get("partner_traits", [])) * 0.15
+    s2 += _slider_similarity(user_a.get("social_setting"), user_b.get("social_setting")) * _imp_weight(ua, ub, "social_setting", 0.20)
+    s2 += _list_overlap(user_a.get("love_languages", []), user_b.get("love_languages", [])) * _imp_weight(ua, ub, "love_languages", 0.20)
+    s2 += _slider_similarity(user_a.get("ritual_importance"), user_b.get("ritual_importance")) * _imp_weight(ua, ub, "ritual_importance", 0.15)
+    s2 += _slider_similarity(user_a.get("appearance_effort"), user_b.get("appearance_effort")) * _imp_weight(ua, ub, "appearance_effort", 0.15)
+    s2 += _list_overlap(user_a.get("self_traits", []), user_b.get("partner_traits", [])) * _imp_weight(ua, ub, "self_traits", 0.15)
+    s2 += _list_overlap(user_b.get("self_traits", []), user_a.get("partner_traits", [])) * _imp_weight(ua, ub, "partner_traits", 0.15)
 
     scores["attraction"] = s2
     weights["attraction"] = SECTION_WEIGHTS["attraction"]
 
     # === Part 3: Daily Life ===
     s3 = 0.0
-    s3 += _slider_similarity(user_a.get("sleep_schedule"), user_b.get("sleep_schedule")) * 0.10
-    s3 += _slider_similarity(user_a.get("messiness_tolerance"), user_b.get("messiness_tolerance")) * 0.10
-    s3 += _slider_similarity(user_a.get("eating_habit"), user_b.get("eating_habit")) * 0.08
-    s3 += _slider_similarity(user_a.get("spice_tolerance"), user_b.get("spice_tolerance")) * 0.08
-    s3 += _categorical_similarity(user_a.get("dietary"), user_b.get("dietary")) * 0.07
-    s3 += _slider_similarity(user_a.get("weekend_pref"), user_b.get("weekend_pref")) * 0.07
-    s3 += _slider_similarity(user_a.get("togetherness"), user_b.get("togetherness")) * 0.08
-    s3 += _slider_similarity(user_a.get("travel_style"), user_b.get("travel_style")) * 0.07
-    s3 += _slider_similarity(user_a.get("spending_style"), user_b.get("spending_style")) * 0.08
-    s3 += _slider_similarity(user_a.get("smoking"), user_b.get("smoking")) * 0.05
-    s3 += _slider_similarity(user_a.get("drinking"), user_b.get("drinking")) * 0.05
-    s3 += _list_overlap(user_a.get("hobbies", []), user_b.get("hobbies", [])) * 0.10
-    s3 += _slider_similarity(user_a.get("hobby_overlap_pref"), user_b.get("hobby_overlap_pref")) * 0.03
-    s3 += _categorical_similarity(user_a.get("meeting_frequency"), user_b.get("meeting_frequency")) * 0.04
+    s3 += _slider_similarity(user_a.get("sleep_schedule"), user_b.get("sleep_schedule")) * _imp_weight(ua, ub, "sleep_schedule", 0.10)
+    s3 += _slider_similarity(user_a.get("messiness_tolerance"), user_b.get("messiness_tolerance")) * _imp_weight(ua, ub, "messiness_tolerance", 0.10)
+    s3 += _slider_similarity(user_a.get("eating_habit"), user_b.get("eating_habit")) * _imp_weight(ua, ub, "eating_habit", 0.08)
+    s3 += _slider_similarity(user_a.get("spice_tolerance"), user_b.get("spice_tolerance")) * _imp_weight(ua, ub, "spice_tolerance", 0.08)
+    s3 += _categorical_similarity(user_a.get("dietary"), user_b.get("dietary")) * _imp_weight(ua, ub, "dietary", 0.07)
+    s3 += _slider_similarity(user_a.get("weekend_pref"), user_b.get("weekend_pref")) * _imp_weight(ua, ub, "weekend_pref", 0.07)
+    s3 += _slider_similarity(user_a.get("togetherness"), user_b.get("togetherness")) * _imp_weight(ua, ub, "togetherness", 0.08)
+    s3 += _slider_similarity(user_a.get("travel_style"), user_b.get("travel_style")) * _imp_weight(ua, ub, "travel_style", 0.07)
+    s3 += _slider_similarity(user_a.get("spending_style"), user_b.get("spending_style")) * _imp_weight(ua, ub, "spending_style", 0.08)
+    s3 += _slider_similarity(user_a.get("smoking"), user_b.get("smoking")) * _imp_weight(ua, ub, "smoking", 0.05)
+    s3 += _slider_similarity(user_a.get("drinking"), user_b.get("drinking")) * _imp_weight(ua, ub, "drinking", 0.05)
+    s3 += _list_overlap(user_a.get("hobbies", []), user_b.get("hobbies", [])) * _imp_weight(ua, ub, "hobbies", 0.10)
+    s3 += _slider_similarity(user_a.get("hobby_overlap_pref"), user_b.get("hobby_overlap_pref")) * _imp_weight(ua, ub, "hobby_overlap_pref", 0.03)
+    s3 += _categorical_similarity(user_a.get("meeting_frequency"), user_b.get("meeting_frequency")) * _imp_weight(ua, ub, "meeting_frequency", 0.04)
 
     scores["daily_life"] = s3
     weights["daily_life"] = SECTION_WEIGHTS["daily_life"]
 
     # === Part 4: Connection ===
     s4 = 0.0
-    s4 += _slider_similarity(user_a.get("reply_anxiety"), user_b.get("reply_anxiety")) * 0.10
-    s4 += _slider_similarity(user_a.get("insecurity_style"), user_b.get("insecurity_style")) * 0.10
-    s4 += _slider_similarity(user_a.get("vulnerability"), user_b.get("vulnerability")) * 0.10
-    s4 += _slider_similarity(user_a.get("opposite_sex_friend"), user_b.get("opposite_sex_friend")) * 0.10
-    s4 += _slider_similarity(user_a.get("decision_making"), user_b.get("decision_making")) * 0.10
-    s4 += _slider_similarity(user_a.get("intimacy_pace"), user_b.get("intimacy_pace")) * 0.15
-    s4 += _slider_similarity(user_a.get("fight_reaction"), user_b.get("fight_reaction")) * 0.15
-    s4 += _slider_similarity(user_a.get("reconciliation"), user_b.get("reconciliation")) * 0.10
-    # 互补性检查：照顾/被照顾
+    s4 += _slider_similarity(user_a.get("reply_anxiety"), user_b.get("reply_anxiety")) * _imp_weight(ua, ub, "reply_anxiety", 0.10)
+    s4 += _slider_similarity(user_a.get("insecurity_style"), user_b.get("insecurity_style")) * _imp_weight(ua, ub, "insecurity_style", 0.10)
+    s4 += _slider_similarity(user_a.get("vulnerability"), user_b.get("vulnerability")) * _imp_weight(ua, ub, "vulnerability", 0.10)
+    s4 += _slider_similarity(user_a.get("opposite_sex_friend"), user_b.get("opposite_sex_friend")) * _imp_weight(ua, ub, "opposite_sex_friend", 0.10)
+    s4 += _slider_similarity(user_a.get("decision_making"), user_b.get("decision_making")) * _imp_weight(ua, ub, "decision_making", 0.10)
+    s4 += _slider_similarity(user_a.get("intimacy_pace"), user_b.get("intimacy_pace")) * _imp_weight(ua, ub, "intimacy_pace", 0.15)
+    s4 += _slider_similarity(user_a.get("fight_reaction"), user_b.get("fight_reaction")) * _imp_weight(ua, ub, "fight_reaction", 0.15)
+    s4 += _slider_similarity(user_a.get("reconciliation"), user_b.get("reconciliation")) * _imp_weight(ua, ub, "reconciliation", 0.10)
     complement = _slider_complementarity(user_a.get("care_style"), user_b.get("care_style"))
     s4 += complement * 0.05 * (1.0 - COMPLEMENTARITY_WEIGHT) + 0.05 * COMPLEMENTARITY_WEIGHT
-    s4 += _slider_similarity(user_a.get("social_media_sharing"), user_b.get("social_media_sharing")) * 0.05
+    s4 += _slider_similarity(user_a.get("social_media_sharing"), user_b.get("social_media_sharing")) * _imp_weight(ua, ub, "social_media_sharing", 0.05)
 
     scores["connection"] = s4
     weights["connection"] = SECTION_WEIGHTS["connection"]
 
     # === Part 5: Future ===
     s5 = 0.0
-    s5 += _slider_similarity(user_a.get("career_drive"), user_b.get("career_drive")) * 0.35
-    s5 += _slider_similarity(user_a.get("prefer_career_drive"), user_b.get("prefer_career_drive")) * 0.35
-    s5 += _slider_similarity(user_a.get("post_grad_lifestyle"), user_b.get("post_grad_lifestyle")) * 0.30
+    s5 += _slider_similarity(user_a.get("career_drive"), user_b.get("career_drive")) * _imp_weight(ua, ub, "career_drive", 0.35)
+    s5 += _slider_similarity(user_a.get("prefer_career_drive"), user_b.get("prefer_career_drive")) * _imp_weight(ua, ub, "prefer_career_drive", 0.35)
+    s5 += _slider_similarity(user_a.get("post_grad_lifestyle"), user_b.get("post_grad_lifestyle")) * _imp_weight(ua, ub, "post_grad_lifestyle", 0.30)
 
     scores["future"] = s5
     weights["future"] = SECTION_WEIGHTS["future"]

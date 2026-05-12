@@ -3,11 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api, { getErrorMessage } from '../utils/api';
 
-function SliderQuestion({ question, value, onChange, highlight }) {
+function SliderQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   const currentVal = value ?? Math.floor((question.min + question.max) / 2);
   return (
     <div className={`space-y-3 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <label className="block text-sm font-medium text-gray-700">{question.label}</label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">{question.label}</label>
+        <button type="button" onClick={() => onToggleImp(question.id)}
+          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
+          title={isImportant ? '已设为重要' : '设为重要'}
+        >★</button>
+      </div>
       <div className="flex items-center gap-3">
         {question.min_label && <span className="text-xs text-gray-400 w-16 text-right shrink-0">{question.min_label}</span>}
         <input
@@ -23,10 +29,16 @@ function SliderQuestion({ question, value, onChange, highlight }) {
   );
 }
 
-function RadioQuestion({ question, value, onChange, highlight }) {
+function RadioQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   return (
     <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <label className="block text-sm font-medium text-gray-700">{question.label}</label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">{question.label}</label>
+        <button type="button" onClick={() => onToggleImp(question.id)}
+          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
+          title={isImportant ? '已设为重要' : '设为重要'}
+        >★</button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {question.options.map((opt) => (
           <button key={opt.value} type="button"
@@ -41,10 +53,16 @@ function RadioQuestion({ question, value, onChange, highlight }) {
   );
 }
 
-function SelectQuestion({ question, value, onChange, highlight }) {
+function SelectQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   return (
     <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <label className="block text-sm font-medium text-gray-700">{question.label}</label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">{question.label}</label>
+        <button type="button" onClick={() => onToggleImp(question.id)}
+          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
+          title={isImportant ? '已设为重要' : '设为重要'}
+        >★</button>
+      </div>
       <select className="input-field" value={value || ''} onChange={(e) => onChange(question.id, e.target.value)}>
         <option value="">请选择</option>
         {question.options.map((opt) => (
@@ -57,7 +75,7 @@ function SelectQuestion({ question, value, onChange, highlight }) {
   );
 }
 
-function CheckboxQuestion({ question, value, onChange, highlight }) {
+function CheckboxQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   const selected = value || [];
   const maxSelect = question.max_select || 999;
   const toggle = (opt) => {
@@ -66,10 +84,16 @@ function CheckboxQuestion({ question, value, onChange, highlight }) {
   };
   return (
     <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <label className="block text-sm font-medium text-gray-700">
-        {question.label}
-        <span className="text-gray-400 text-xs ml-1">（最多选{maxSelect}项，已选{selected.length}）</span>
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">
+          {question.label}
+          <span className="text-gray-400 text-xs ml-1">（最多选{maxSelect}项，已选{selected.length}）</span>
+        </label>
+        <button type="button" onClick={() => onToggleImp(question.id)}
+          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
+          title={isImportant ? '已设为重要' : '设为重要'}
+        >★</button>
+      </div>
       <div className="flex flex-wrap gap-2">
         {question.options.map((opt) => {
           const optVal = typeof opt === 'string' ? opt : opt.value;
@@ -142,6 +166,10 @@ export default function Survey() {
   const updateAnswer = (id, value) => {
     setAnswers((prev) => ({ ...prev, [id]: value }));
     setHighlightedFields((prev) => prev.filter((f) => f !== id));
+  };
+
+  const toggleImportance = (qid) => {
+    setAnswers((prev) => ({ ...prev, [`_imp_${qid}`]: !prev[`_imp_${qid}`] }));
   };
 
   const isQuestionAnswered = useCallback((q) => {
@@ -393,7 +421,7 @@ export default function Survey() {
               const key = q.id;
               const value = answers[key];
               const isHighlighted = highlightedFields.includes(key);
-              const commonProps = { question: q, value, onChange: updateAnswer, highlight: isHighlighted };
+              const commonProps = { question: q, value, onChange: updateAnswer, highlight: isHighlighted, isImportant: !!answers[`_imp_${q.id}`], onToggleImp: toggleImportance };
               switch (q.type) {
                 case 'slider': return <div key={key} ref={(el) => { if (el) sectionRefs.current[key] = el; }} className="py-1"><SliderQuestion {...commonProps} /></div>;
                 case 'radio': return <div key={key} ref={(el) => { if (el) sectionRefs.current[key] = el; }} className="py-1"><RadioQuestion {...commonProps} /></div>;
