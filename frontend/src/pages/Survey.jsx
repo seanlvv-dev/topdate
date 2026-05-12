@@ -15,7 +15,7 @@ function SliderQuestion({ question, value, onChange, highlight, isImportant, onT
           }`}
           title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
         >
-          ★ {isImportant ? '重要' : '重要？'}
+          ★ {isImportant ? '重要' : '重要'}
         </button>
       </div>
       <div className="flex items-center gap-3">
@@ -44,7 +44,7 @@ function RadioQuestion({ question, value, onChange, highlight, isImportant, onTo
           }`}
           title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
         >
-          ★ {isImportant ? '重要' : '重要？'}
+          ★ {isImportant ? '重要' : '重要'}
         </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -72,7 +72,7 @@ function SelectQuestion({ question, value, onChange, highlight, isImportant, onT
           }`}
           title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
         >
-          ★ {isImportant ? '重要' : '重要？'}
+          ★ {isImportant ? '重要' : '重要'}
         </button>
       </div>
       <select className="input-field" value={value || ''} onChange={(e) => onChange(question.id, e.target.value)}>
@@ -107,7 +107,7 @@ function CheckboxQuestion({ question, value, onChange, highlight, isImportant, o
           }`}
           title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
         >
-          ★ {isImportant ? '重要' : '重要？'}
+          ★ {isImportant ? '重要' : '重要'}
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -436,7 +436,7 @@ export default function Survey() {
             {/* importance feature hint */}
             <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-700">
               <span className="text-base shrink-0">💡</span>
-              <span>每道题右侧有 <strong className="text-amber-600">"★ 重要？"</strong> 按钮。点亮后，此题在匹配算法中的<strong>权重翻倍</strong>——你觉得特别重要的题，算法会更重视。</span>
+              <span>每道题右侧有 <strong className="text-amber-600">"★ 重要"</strong> 按钮。点亮后，此题在匹配算法中的<strong>权重翻倍</strong>——你觉得特别重要的题，算法会更重视。</span>
             </div>
 
             {currentSectionData.questions.map((q) => {
