@@ -6,6 +6,7 @@ export default function Navigation() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [dropdown, setDropdown] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -16,10 +17,18 @@ export default function Navigation() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const isHome = location.pathname === '/' || location.pathname === '/dashboard';
+  useEffect(() => {
+    if (location.pathname !== '/' && location.pathname !== '/dashboard') return;
+    const check = () => {
+      setActiveTab(window.location.hash === '#stats' ? 'stats' : 'dashboard');
+    };
+    check();
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, [location.pathname]);
 
   const scrollToStats = () => {
-    if (isHome) {
+    if (location.pathname === '/' || location.pathname === '/dashboard') {
       const el = document.getElementById('stats-section');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     } else {
@@ -27,10 +36,26 @@ export default function Navigation() {
     }
   };
 
+  const goDashboard = () => {
+    if (location.pathname === '/' || location.pathname === '/dashboard') {
+      window.location.hash = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setActiveTab('dashboard');
+    } else {
+      window.location.href = '/';
+    }
+  };
+
+  const tabStyle = (tab) =>
+    `px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${
+      activeTab === tab
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-gray-500 hover:text-gray-700'
+    }`;
+
   return (
     <nav className="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* 左侧：Logo + 导航项 */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold shrink-0">
             <span className="text-2xl">❤️</span>
@@ -39,18 +64,10 @@ export default function Navigation() {
 
           {user && (
             <div className="hidden sm:flex items-center gap-1">
-              <Link
-                to="/"
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  isHome ? 'bg-primary-50 text-primary-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
+              <button onClick={goDashboard} className={tabStyle('dashboard')}>
                 仪表盘
-              </Link>
-              <button
-                onClick={scrollToStats}
-                className="px-3 py-1.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
-              >
+              </button>
+              <button onClick={scrollToStats} className={tabStyle('stats')}>
                 配对局势
               </button>
               <span className="px-3 py-1.5 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed">
@@ -60,7 +77,6 @@ export default function Navigation() {
           )}
         </div>
 
-        {/* 右侧：用户区 */}
         <div className="flex items-center gap-3">
           {user ? (
             <div className="relative" ref={dropdownRef}>
@@ -76,67 +92,31 @@ export default function Navigation() {
 
               {dropdown && (
                 <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl shadow-lg border border-gray-100 py-2 animate-fade-in z-50">
-                  <Link
-                    to="/profile"
-                    onClick={() => setDropdown(false)}
-                    className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    个人资料
-                  </Link>
-                  <Link
-                    to="/matches"
-                    onClick={() => setDropdown(false)}
-                    className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    我的匹配
-                  </Link>
+                  <Link to="/profile" onClick={() => setDropdown(false)} className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">个人资料</Link>
+                  <Link to="/matches" onClick={() => setDropdown(false)} className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">我的匹配</Link>
                   {user.is_admin && (
-                    <Link
-                      to="/admin"
-                      onClick={() => setDropdown(false)}
-                      className="block px-4 py-2 text-sm text-accent-600 hover:bg-gray-50 transition-colors"
-                    >
-                      管理员面板
-                    </Link>
+                    <Link to="/admin" onClick={() => setDropdown(false)} className="block px-4 py-2 text-sm text-accent-600 hover:bg-gray-50 transition-colors">管理员面板</Link>
                   )}
                   <hr className="my-1 border-gray-100" />
-                  <button
-                    onClick={() => { setDropdown(false); logout(); }}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors"
-                  >
-                    退出登录
-                  </button>
+                  <button onClick={() => { setDropdown(false); logout(); }} className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors">退出登录</button>
                 </div>
               )}
             </div>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-medium text-gray-500 hover:text-primary-500 transition-colors">
-                登录
-              </Link>
-              <Link to="/register" className="btn-primary !py-2 !px-5 text-sm">
-                注册
-              </Link>
+              <Link to="/login" className="text-sm font-medium text-gray-500 hover:text-primary-500 transition-colors">登录</Link>
+              <Link to="/register" className="btn-primary !py-2 !px-5 text-sm">注册</Link>
             </>
           )}
         </div>
       </div>
 
-      {/* 移动端底部导航 */}
       {user && (
         <div className="sm:hidden border-t border-gray-100 px-4 h-12 flex items-center justify-around text-xs">
-          <Link to="/" className={`font-medium ${isHome ? 'text-primary-500' : 'text-gray-400'}`}>
-            仪表盘
-          </Link>
-          <button onClick={scrollToStats} className="font-medium text-gray-400">
-            配对局势
-          </button>
-          <Link to="/matches" className="font-medium text-gray-400">
-            匹配
-          </Link>
-          <Link to="/profile" className="font-medium text-gray-400">
-            我的
-          </Link>
+          <button onClick={goDashboard} className={`font-medium ${activeTab === 'dashboard' ? 'text-primary-500' : 'text-gray-400'}`}>仪表盘</button>
+          <button onClick={scrollToStats} className={`font-medium ${activeTab === 'stats' ? 'text-primary-500' : 'text-gray-400'}`}>配对局势</button>
+          <Link to="/matches" className="font-medium text-gray-400">匹配</Link>
+          <Link to="/profile" className="font-medium text-gray-400">我的</Link>
         </div>
       )}
     </nav>

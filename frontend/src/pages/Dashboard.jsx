@@ -97,8 +97,30 @@ export default function Dashboard() {
   useEffect(() => {
     if (window.location.hash === '#stats' && statsRef.current) {
       statsRef.current.scrollIntoView({ behavior: 'smooth' });
-      window.location.hash = '';
     }
+  }, []);
+
+  // IntersectionObserver: 滚动到平台数据时自动高亮导航
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (window.location.hash !== '#stats') {
+            history.replaceState(null, '', '#stats');
+          }
+        } else {
+          if (window.location.hash === '#stats') {
+            history.replaceState(null, '', window.location.pathname);
+          }
+        }
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
