@@ -561,7 +561,7 @@ async def get_my_matches(
         my_uni = get_university_by_id(current_user.university_id)
         my_action = m.user1_action if is_user1 else m.user2_action
 
-        match_list.append({
+        match_item = {
             "match_id": m.id,
             "compatibility_score": m.compatibility_score,
             "detail_scores": m.detail_scores or {},
@@ -578,9 +578,11 @@ async def get_my_matches(
                 "age": other.age,
                 "gender": other.gender,
                 "bio": other.bio,
+                "email": other.email if m.status == MatchStatus.MATCHED.value else None,
             },
             "created_at": m.created_at.isoformat() if m.created_at else None,
-        })
+        }
+        match_list.append(match_item)
 
     return match_list
 

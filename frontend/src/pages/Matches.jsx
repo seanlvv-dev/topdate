@@ -108,6 +108,23 @@ function MatchCard({ match, onAction }) {
           </button>
         </div>
       )}
+
+      {match.status === 'matched' && (
+        <div className="bg-pink-50 rounded-2xl p-4 text-center">
+          <div className="text-lg mb-1">🎉 匹配成功！</div>
+          <p className="text-xs text-gray-500 mb-2">你们互相喜欢了对方，可以联系啦</p>
+          <div className="bg-white rounded-xl p-3 text-left">
+            <p className="text-xs text-gray-400">对方邮箱</p>
+            <p className="text-sm font-medium text-primary-600 break-all">{u.email || '（加载中）'}</p>
+          </div>
+        </div>
+      )}
+
+      {match.status === 'liked' && (
+        <div className="text-center py-3 text-sm text-gray-400">
+          ⏳ 已表达喜欢，等待对方回应...
+        </div>
+      )}
     </div>
   );
 }
