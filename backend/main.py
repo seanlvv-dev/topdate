@@ -248,7 +248,8 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
 
     await db.commit()
 
-    resp = {"message": "注册成功！", "user": _user_to_brief(user)}
+    access_token = create_access_token(data={"sub": str(user.id)})
+    resp = {"message": "注册成功！", "user": _user_to_brief(user), "access_token": access_token}
     if not verified and code:
         email_sent = await send_verification_email(req.email, code)
         if not email_sent:

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUniversities } from '../hooks/useData';
-import api from '../utils/api';
+import api, { setToken } from '../utils/api';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -78,11 +78,14 @@ export default function Register() {
         department,
         code,
       });
+      // 注册成功后自动登录
+      if (res.access_token) {
+        setToken(res.access_token);
+        await refreshUser();
+      }
       if (res.verification_code) {
-        setCode(res.verification_code);
         setMsg('验证码已显示在下方：' + res.verification_code);
       } else {
-        await refreshUser();
         navigate('/survey');
       }
     } catch (err) {
