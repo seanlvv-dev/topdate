@@ -12,6 +12,8 @@
 | 🟡 | ⬜ | 正式发布前买域名+服务器 | Cloudflare 买域名（~30元/年），腾讯云续费服务器（~68元/年） |
 | 🟡 | ⬜ | 正式发布前配 HTTPS | 装 Let's Encrypt 或 Cloudflare SSL |
 | 🟢 | ⬜ | 把发送邮箱从 `TopDate@163.com` 换成 `noreply@你的域名` | 改 .env 里的 SMTP_FROM |
+| 🟡 | ⬜ | **正式上线时删除测试cron** | 在 `backend/main.py` 删除 `test_tuesday_matching` 那7行 + 服务器重建后端 |
+| 🔴 | ⬜ | **正式上线时清理1000虚拟用户** | 跑清理 SQL 命令（见下方） |
 
 > 🔴 = 不做会出事 | 🟡 = 上线前要做 | 🟢 = 锦上添花 | ✅ = 已完成 | ⬜ = 未做
 
