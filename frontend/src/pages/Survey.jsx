@@ -142,6 +142,7 @@ export default function Survey() {
   const [answers, setAnswers] = useState({});
   const [distancePref, setDistancePref] = useState('');
   const [error, setError] = useState('');
+  const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [questionsLoading, setQuestionsLoading] = useState(true);
@@ -173,8 +174,21 @@ export default function Survey() {
         } else {
           setAnswers((prev) => ({ ...defaults, ...prev }));
         }
-      }).catch(() => {
-        setAnswers((prev) => ({ ...defaults, ...prev }));
+      }).catch(async () => {
+        // 没有已提交答卷，尝试加载草稿
+        try {
+          const draftRes = await api.get('/survey/load-draft');
+          if (draftRes.data.draft && Object.keys(draftRes.data.draft).length > 0) {
+            setAnswers({ ...defaults, ...draftRes.data.draft });
+            setDistancePref(draftRes.data.draft.max_distance_preference || '');
+            setMsg('已加载上次暂存的进度，请继续填写');
+            setTimeout(() => setMsg(''), 3000);
+          } else {
+            setAnswers((prev) => ({ ...defaults, ...prev }));
+          }
+        } catch {
+          setAnswers((prev) => ({ ...defaults, ...prev }));
+        }
       });
     }).catch(() => setQuestionsLoading(false));
   }, []);
@@ -186,6 +200,16 @@ export default function Survey() {
 
   const toggleImportance = (qid) => {
     setAnswers((prev) => ({ ...prev, [`_imp_${qid}`]: !prev[`_imp_${qid}`] }));
+  };
+
+  const saveDraft = async () => {
+    try {
+      await api.post('/survey/save-draft', { ...answers, max_distance_preference: distancePref });
+      setMsg('草稿已暂存，随时可回来继续');
+      setTimeout(() => setMsg(''), 2000);
+    } catch {
+      setMsg('暂存失败');
+    }
   };
 
   const isQuestionAnswered = useCallback((q) => {
@@ -382,6 +406,9 @@ export default function Survey() {
       {error && (
         <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">{error}</div>
       )}
+      {msg && (
+        <div className="bg-green-50 text-green-600 text-sm px-4 py-3 rounded-2xl mb-4">{msg}</div>
+      )}
       {missingCount > 0 && !isLastSection && (
         <div className="bg-yellow-50 text-yellow-700 text-sm px-4 py-3 rounded-2xl mb-4 flex items-center justify-between">
           <span>还有 {missingCount} 个必填项未完成</span>
@@ -454,6 +481,9 @@ export default function Survey() {
             })}
 
             <div className="flex gap-3 pt-4 border-t border-gray-100">
+              <button type="button" onClick={saveDraft} className="btn-outline flex-1 !text-xs !py-2">
+                暂存
+              </button>
               {currentSection > 0 && (
                 <button onClick={handlePrev} className="btn-outline flex-1">上一步</button>
               )}

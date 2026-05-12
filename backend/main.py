@@ -523,6 +523,22 @@ async def get_my_answers(current_user: User = Depends(get_current_user)):
     }
 
 
+@app.post("/api/survey/save-draft", response_model=dict)
+async def save_draft(draft: dict, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """暂存问卷草稿（不校验完整性）"""
+    current_user.draft_answers = draft
+    await db.commit()
+    return {"message": "草稿已保存"}
+
+
+@app.get("/api/survey/load-draft", response_model=dict)
+async def load_draft(current_user: User = Depends(get_current_user)):
+    """加载暂存的草稿"""
+    return {
+        "draft": current_user.draft_answers or {},
+    }
+
+
 @app.get("/api/survey/questions", response_model=dict)
 async def get_survey_questions():
     """获取问卷问题列表（前端渲染用）"""
