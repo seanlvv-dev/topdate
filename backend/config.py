@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     MATCHING_SATURDAY_HOUR: int = 17
     MATCHING_SATURDAY_MINUTE: int = 50
     TOP_MATCHES_PER_USER: int = 1
+    SITE_URL: str = "http://111.229.36.34:3000"
 
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 

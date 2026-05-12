@@ -263,7 +263,7 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
 
 @app.post("/api/auth/verify-email", response_model=dict)
 async def verify_email(req: VerifyEmailRequest, request: Request, db: AsyncSession = Depends(get_db)):
-    """验证邮箱"""
+    """验证邮箱（POST方式，输入验证码）"""
     if not check_rate_limit("/api/auth/verify-email", request.client.host):
         raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
     result = await db.execute(
@@ -281,7 +281,6 @@ async def verify_email(req: VerifyEmailRequest, request: Request, db: AsyncSessi
 
     vc.used = True
 
-    # 更新用户状态
     user_result = await db.execute(select(User).where(User.email == req.email))
     user = user_result.scalar_one_or_none()
     if user:
@@ -289,6 +288,33 @@ async def verify_email(req: VerifyEmailRequest, request: Request, db: AsyncSessi
 
     await db.commit()
 
+    return {"message": "邮箱验证成功！请继续完成问卷以激活账号"}
+
+
+@app.get("/api/auth/verify-email-link", response_model=dict)
+async def verify_email_link(email: str, code: str, db: AsyncSession = Depends(get_db)):
+    """验证邮箱（GET方式，邮件链接一键验证）"""
+    result = await db.execute(
+        select(VerificationCode).where(
+            VerificationCode.email == email,
+            VerificationCode.code == code,
+            VerificationCode.used == False,
+            VerificationCode.expires_at > datetime.utcnow(),
+        ).order_by(VerificationCode.created_at.desc())
+    )
+    vc = result.scalar_one_or_none()
+
+    if not vc:
+        raise HTTPException(status_code=400, detail="验证链接无效或已过期")
+
+    vc.used = True
+
+    user_result = await db.execute(select(User).where(User.email == email))
+    user = user_result.scalar_one_or_none()
+    if user:
+        user.verification_status = StudentVerificationStatus.VERIFIED.value
+
+    await db.commit()
     return {"message": "邮箱验证成功！请继续完成问卷以激活账号"}
 
 

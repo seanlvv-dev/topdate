@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
 
@@ -9,15 +9,36 @@ export default function VerifyEmail() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMsg, setResendMsg] = useState('');
+  const [autoVerifying, setAutoVerifying] = useState(false);
+  const [autoMsg, setAutoMsg] = useState('');
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // 邮件链接一键验证
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    const codeParam = searchParams.get('code');
+    if (!emailParam || !codeParam) return;
+    setAutoVerifying(true);
+    api.get('/auth/verify-email-link', { params: { email: emailParam, code: codeParam } })
+      .then(async () => {
+        await refreshUser();
+        setAutoMsg('邮箱验证成功！正在跳转...');
+        setTimeout(() => navigate('/survey'), 1000);
+      })
+      .catch((err) => {
+        setAutoMsg(err.response?.data?.detail || '验证链接已过期');
+        setAutoVerifying(false);
+      });
+  }, []);
 
   const handleVerify = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await api.post('/auth/verify-email', { email: user.email, code });
+      await api.post('/auth/verify-email', { email: user?.email, code });
       await refreshUser();
       navigate('/survey');
     } catch (err) {
@@ -31,7 +52,7 @@ export default function VerifyEmail() {
     setResending(true);
     setResendMsg('');
     try {
-      const res = await api.post('/auth/resend-verification', { email: user.email });
+      const res = await api.post('/auth/resend-verification', { email: user?.email });
       if (res.data.verification_code) {
         setCode(res.data.verification_code);
         setResendMsg('验证码已获取：' + res.data.verification_code);
@@ -44,6 +65,24 @@ export default function VerifyEmail() {
       setResending(false);
     }
   };
+
+  // 自动验证中
+  if (autoVerifying || autoMsg) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4">
+        <div className="card text-center max-w-md w-full animate-slide-up">
+          <div className="text-5xl mb-4">{autoMsg.includes('成功') ? '✅' : '⏳'}</div>
+          <h2 className="text-xl font-bold mb-2">
+            {autoMsg.includes('成功') ? '验证成功' : '正在验证'}
+          </h2>
+          <p className="text-gray-500 text-sm">{autoMsg || '请稍候...'}</p>
+          {!autoMsg.includes('成功') && autoVerifying && (
+            <div className="animate-spin w-8 h-8 border-4 border-primary-300 border-t-primary-600 rounded-full mx-auto mt-4" />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
