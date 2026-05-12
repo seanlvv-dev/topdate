@@ -158,7 +158,8 @@ async def send_verification_code(req: SendCodeRequest, request: Request, db: Asy
     if not uni:
         raise HTTPException(status_code=400, detail="无效的大学ID")
 
-    if not get_university_by_email(req.email):
+    matched_uni = get_university_by_email(req.email)
+    if not matched_uni or matched_uni["id"] != req.university_id:
         raise HTTPException(
             status_code=400,
             detail=f"请使用{uni['name']}的官方邮箱注册（支持域名：{', '.join(uni['email_domains'])}）",
@@ -192,7 +193,8 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
     if not uni:
         raise HTTPException(status_code=400, detail="无效的大学ID")
 
-    if not get_university_by_email(req.email):
+    matched_uni = get_university_by_email(req.email)
+    if not matched_uni or matched_uni["id"] != req.university_id:
         raise HTTPException(
             status_code=400,
             detail=f"请使用{uni['name']}的官方邮箱注册（支持域名：{', '.join(uni['email_domains'])}）",
