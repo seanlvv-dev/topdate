@@ -205,8 +205,7 @@ export default function Survey() {
   const saveDraft = async () => {
     try {
       await api.post('/survey/save-draft', { ...answers, max_distance_preference: distancePref });
-      setMsg('草稿已暂存，随时可回来继续');
-      setTimeout(() => setMsg(''), 2000);
+      navigate('/');
     } catch {
       setMsg('暂存失败');
     }
