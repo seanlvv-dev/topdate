@@ -142,7 +142,13 @@ export default function Dashboard() {
   const pendingCount = matches.filter((m) => m.status === 'pending').length;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-12">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #fef5f7 0%, #fdf6f0 30%, #f8f6fb 60%, #fef9f5 100%)' }}>
+      {/* 装饰光斑 */}
+      <div className="absolute top-[-10%] left-[-5%] w-72 h-72 bg-rose-200/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[-5%] w-96 h-96 bg-amber-200/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-[40%] left-[15%] w-48 h-48 bg-purple-200/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative max-w-3xl mx-auto px-4 py-8 space-y-12">
       {/* ── 欢迎区 ── */}
       <section className="text-center">
         <h1 className="text-2xl font-bold">
@@ -423,6 +429,7 @@ export default function Dashboard() {
       </section>
 
       <div className="h-8" />
+    </div>
     </div>
   );
 }
