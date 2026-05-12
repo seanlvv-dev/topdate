@@ -29,6 +29,11 @@ export default function Contact() {
           </div>
         </div>
 
+        <div className="mt-6 p-4 bg-gray-50 rounded-2xl text-center">
+          <p className="text-xs text-gray-400 mb-3">扫码加入内测群</p>
+          <img src="/qrcode.jpg" alt="内测群二维码" className="w-48 h-48 mx-auto rounded-xl border border-gray-200" />
+        </div>
+
         <p className="text-xs text-gray-400 mt-4">
           我们会在 1-3 个工作日内回复你的来信。如遇紧急问题（如骚扰举报），请在邮件标题注明「紧急」。
         </p>
