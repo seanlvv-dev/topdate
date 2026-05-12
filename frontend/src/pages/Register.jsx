@@ -86,7 +86,7 @@ export default function Register() {
       if (res.verification_code) {
         setMsg('验证码已显示在下方：' + res.verification_code);
       } else {
-        navigate('/survey');
+        navigate('/');
       }
     } catch (err) {
       setError(err.response?.data?.detail || '注册失败');

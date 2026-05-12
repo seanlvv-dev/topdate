@@ -67,10 +67,6 @@ async def send_verification_email(email: str, code: str) -> bool:
             <div style="background:#F8F9FA;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
                 <span style="font-size:36px;font-weight:bold;color:#FF6B6B;letter-spacing:8px;">{code}</span>
             </div>
-            <div style="text-align:center;margin:24px 0;">
-                <a href="{verify_url}" style="display:inline-block;background:#FF6B6B;color:#fff;padding:14px 40px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:bold;">点击验证邮箱</a>
-            </div>
-            <p style="color:#999;font-size:13px;text-align:center;">也可以复制链接手动打开：<br/><a href="{verify_url}" style="color:#FF6B6B;word-break:break-all;">{verify_url}</a></p>
             <p style="color:#999;font-size:13px;">验证码10分钟内有效，请勿泄露给他人。</p>
         </div>
     </div>
@@ -105,9 +101,6 @@ async def send_password_reset_email(email: str, code: str) -> bool:
             <p style="color:#666;line-height:1.8;">你的密码重置验证码是：</p>
             <div style="background:#F8F9FA;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
                 <span style="font-size:36px;font-weight:bold;color:#FF6B6B;letter-spacing:8px;">{code}</span>
-            </div>
-            <div style="text-align:center;margin:24px 0;">
-                <a href="{reset_url}" style="display:inline-block;background:#FF6B6B;color:#fff;padding:14px 40px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:bold;">去重设密码</a>
             </div>
             <p style="color:#999;font-size:13px;">验证码10分钟内有效，如果非本人操作请忽略此邮件。</p>
         </div>
