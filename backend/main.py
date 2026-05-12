@@ -543,7 +543,7 @@ async def get_my_matches(
     result = await db.execute(
         select(Match).where(
             or_(Match.user1_id == current_user.id, Match.user2_id == current_user.id),
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.LIKED.value, MatchStatus.MATCHED.value]),
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.LIKED.value, MatchStatus.MATCHED.value, MatchStatus.REJECTED.value, MatchStatus.EXPIRED.value]),
         ).order_by(Match.compatibility_score.desc())
     )
     matches = result.scalars().all()
