@@ -316,7 +316,11 @@ export default function Dashboard() {
           matches.length > 0 ? (
             <div className="space-y-3">
               {matches.slice(0, 8).map((m) => (
-                <div key={m.match_id} className="card flex items-center justify-between py-4">
+                <div
+                  key={m.match_id}
+                  onClick={() => navigate('/matches')}
+                  className="card flex items-center justify-between py-4 cursor-pointer hover:border-primary-200 hover:shadow-sm transition-all"
+                >
                   <div className="flex items-center gap-3">
                     <span className="w-9 h-9 bg-primary-50 text-primary-500 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
                       {m.user?.nickname?.[0] || '?'}
