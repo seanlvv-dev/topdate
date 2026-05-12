@@ -6,13 +6,17 @@ import api, { getErrorMessage } from '../utils/api';
 function SliderQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   const currentVal = value ?? Math.floor((question.min + question.max) / 2);
   return (
-    <div className={`space-y-3 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <div className="flex items-center justify-between">
+    <div className={`space-y-3 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : isImportant ? 'bg-amber-50/50' : ''}`} data-field={question.id}>
+      <div className="flex items-center justify-between gap-2">
         <label className="block text-sm font-medium text-gray-700">{question.label}</label>
         <button type="button" onClick={() => onToggleImp(question.id)}
-          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
-          title={isImportant ? '已设为重要' : '设为重要'}
-        >★</button>
+          className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border transition-all ${
+            isImportant ? 'bg-amber-100 text-amber-600 border-amber-300' : 'text-gray-400 border-gray-200 hover:border-amber-300 hover:text-amber-500'
+          }`}
+          title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
+        >
+          ★ {isImportant ? '重要' : '重要？'}
+        </button>
       </div>
       <div className="flex items-center gap-3">
         {question.min_label && <span className="text-xs text-gray-400 w-16 text-right shrink-0">{question.min_label}</span>}
@@ -31,13 +35,17 @@ function SliderQuestion({ question, value, onChange, highlight, isImportant, onT
 
 function RadioQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   return (
-    <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <div className="flex items-center justify-between">
+    <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : isImportant ? 'bg-amber-50/50' : ''}`} data-field={question.id}>
+      <div className="flex items-center justify-between gap-2">
         <label className="block text-sm font-medium text-gray-700">{question.label}</label>
         <button type="button" onClick={() => onToggleImp(question.id)}
-          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
-          title={isImportant ? '已设为重要' : '设为重要'}
-        >★</button>
+          className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border transition-all ${
+            isImportant ? 'bg-amber-100 text-amber-600 border-amber-300' : 'text-gray-400 border-gray-200 hover:border-amber-300 hover:text-amber-500'
+          }`}
+          title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
+        >
+          ★ {isImportant ? '重要' : '重要？'}
+        </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {question.options.map((opt) => (
@@ -55,13 +63,17 @@ function RadioQuestion({ question, value, onChange, highlight, isImportant, onTo
 
 function SelectQuestion({ question, value, onChange, highlight, isImportant, onToggleImp }) {
   return (
-    <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : ''}`} data-field={question.id}>
-      <div className="flex items-center justify-between">
+    <div className={`space-y-2 rounded-2xl p-3 transition-all duration-500 ${highlight ? 'bg-yellow-50 ring-2 ring-yellow-400' : isImportant ? 'bg-amber-50/50' : ''}`} data-field={question.id}>
+      <div className="flex items-center justify-between gap-2">
         <label className="block text-sm font-medium text-gray-700">{question.label}</label>
         <button type="button" onClick={() => onToggleImp(question.id)}
-          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
-          title={isImportant ? '已设为重要' : '设为重要'}
-        >★</button>
+          className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border transition-all ${
+            isImportant ? 'bg-amber-100 text-amber-600 border-amber-300' : 'text-gray-400 border-gray-200 hover:border-amber-300 hover:text-amber-500'
+          }`}
+          title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
+        >
+          ★ {isImportant ? '重要' : '重要？'}
+        </button>
       </div>
       <select className="input-field" value={value || ''} onChange={(e) => onChange(question.id, e.target.value)}>
         <option value="">请选择</option>
@@ -90,9 +102,13 @@ function CheckboxQuestion({ question, value, onChange, highlight, isImportant, o
           <span className="text-gray-400 text-xs ml-1">（最多选{maxSelect}项，已选{selected.length}）</span>
         </label>
         <button type="button" onClick={() => onToggleImp(question.id)}
-          className={`text-lg transition-all ${isImportant ? 'text-amber-400 scale-110' : 'text-gray-300 hover:text-gray-400'}`}
-          title={isImportant ? '已设为重要' : '设为重要'}
-        >★</button>
+          className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border transition-all ${
+            isImportant ? 'bg-amber-100 text-amber-600 border-amber-300' : 'text-gray-400 border-gray-200 hover:border-amber-300 hover:text-amber-500'
+          }`}
+          title={isImportant ? '已标为重要 — 此题权重翻倍' : '点击标为重要 — 匹配时此题权重翻倍'}
+        >
+          ★ {isImportant ? '重要' : '重要？'}
+        </button>
       </div>
       <div className="flex flex-wrap gap-2">
         {question.options.map((opt) => {
@@ -415,6 +431,12 @@ export default function Survey() {
               <div className="text-2xl mb-1">{SECTION_NAMES[currentSectionData.id]?.icon}</div>
               <h2 className="text-lg font-bold">{SECTION_NAMES[currentSectionData.id]?.title}</h2>
               <p className="text-sm text-gray-400">{SECTION_NAMES[currentSectionData.id]?.desc}</p>
+            </div>
+
+            {/* importance feature hint */}
+            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-700">
+              <span className="text-base shrink-0">💡</span>
+              <span>每道题右侧有 <strong className="text-amber-600">"★ 重要？"</strong> 按钮。点亮后，此题在匹配算法中的<strong>权重翻倍</strong>——你觉得特别重要的题，算法会更重视。</span>
             </div>
 
             {currentSectionData.questions.map((q) => {
