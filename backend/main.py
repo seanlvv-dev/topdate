@@ -99,6 +99,16 @@ async def lifespan(app: FastAPI):
         id="cleanup_saturday",
         replace_existing=True,
     )
+    # ===== 测试用：周二10:30匹配（正式上线前删除下行） =====
+    scheduler.add_job(
+        run_wednesday_matching,
+        "cron",
+        day_of_week="tue",
+        hour=10, minute=30,
+        id="test_tuesday_matching",
+        replace_existing=True,
+    )
+    # ===== 测试结束 =====
     scheduler.start()
     logger.info("定时任务调度器已启动")
     yield
