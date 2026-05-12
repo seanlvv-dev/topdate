@@ -342,7 +342,26 @@ export default function Survey() {
   const progress = ((currentSection + 1) / (sections.length + 1)) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-white">
+      {/* 自定义顶部栏 — 替代主导航 */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">❤️</span>
+            <span className="gradient-text font-bold text-sm">TopDate 问卷</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-400 hidden sm:inline">
+              {isLastSection ? '最后一步' : `${currentSection + 1}/${sections.length + 1} · ${SECTION_NAMES[currentSectionData?.id]?.title || ''}`}
+            </span>
+            <button onClick={saveDraft} className="text-xs px-3 py-1.5 rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-primary-500 transition-colors font-medium">
+              暂存退出
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-6">
       {submitted && (
         <div className="card text-center max-w-md mx-auto animate-slide-up">
           <div className="text-5xl mb-4">🎉</div>
@@ -498,6 +517,7 @@ export default function Survey() {
           </div>
         )
       )}
+    </div>
     </div>
   );
 }

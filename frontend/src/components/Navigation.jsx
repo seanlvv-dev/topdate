@@ -36,6 +36,8 @@ export default function Navigation() {
     }
   };
 
+  if (location.pathname === '/survey') return null;
+
   const goDashboard = () => {
     if (location.pathname === '/' || location.pathname === '/dashboard') {
       window.location.hash = '';
