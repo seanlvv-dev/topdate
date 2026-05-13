@@ -16,6 +16,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, cast, Integer
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from uuid import uuid4 as _uuid4
 
 from config import get_settings
 from database import get_db, init_db, engine, Base
@@ -64,51 +66,10 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 async def lifespan(app: FastAPI):
     """应用生命周期"""
     await init_db()
-    # 设置每周二18:00 + 每周六18:00的定时任务
-    scheduler.add_job(
-        run_tuesday_matching,
-        "cron",
-        day_of_week="tue",
-        hour=settings.MATCHING_CRON_HOUR,
-        minute=settings.MATCHING_CRON_MINUTE,
-        id="tuesday_matching",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        run_saturday_matching,
-        "cron",
-        day_of_week="sat",
-        hour=settings.MATCHING_SATURDAY_HOUR,
-        minute=settings.MATCHING_SATURDAY_MINUTE,
-        id="saturday_matching",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        cleanup_expired_matches,
-        "cron",
-        day_of_week="tue",
-        hour=19, minute=0,
-        id="cleanup_tuesday",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        cleanup_expired_matches,
-        "cron",
-        day_of_week="sat",
-        hour=19, minute=0,
-        id="cleanup_saturday",
-        replace_existing=True,
-    )
-    # ===== 测试用：周二10:30匹配（正式上线前删除下行） =====
-    scheduler.add_job(
-        run_wednesday_matching,
-        "cron",
-        day_of_week="tue",
-        hour=10, minute=30,
-        id="test_tuesday_matching",
-        replace_existing=True,
-    )
-    # ===== 测试结束 =====
+    scheduler.add_job(run_tuesday_matching, CronTrigger(day_of_week="tue", hour=settings.MATCHING_CRON_HOUR, minute=settings.MATCHING_CRON_MINUTE), id="tuesday_matching", replace_existing=True)
+    scheduler.add_job(run_saturday_matching, CronTrigger(day_of_week="sat", hour=settings.MATCHING_SATURDAY_HOUR, minute=settings.MATCHING_SATURDAY_MINUTE), id="saturday_matching", replace_existing=True)
+    scheduler.add_job(cleanup_expired_matches, CronTrigger(day_of_week="tue", hour=19, minute=0), id="cleanup_tuesday", replace_existing=True)
+    scheduler.add_job(cleanup_expired_matches, CronTrigger(day_of_week="sat", hour=19, minute=0), id="cleanup_saturday", replace_existing=True)
     scheduler.start()
     logger.info("定时任务调度器已启动")
     yield
