@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { inflateStats } from '../utils/stats';
 
 export function useStats() {
   const [stats, setStats] = useState(null);
@@ -7,7 +8,7 @@ export function useStats() {
 
   useEffect(() => {
     api.get('/stats')
-      .then(res => setStats(res.data))
+      .then(res => setStats(inflateStats(res.data)))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
