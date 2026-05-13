@@ -161,7 +161,7 @@ export default function Home() {
               { icon: '🎯', title: '每周两次', desc: '周二和周六晚六点统一揭晓。用心等待，而非无尽刷屏。' },
               { icon: '💡', title: '精准匹配', desc: '基于价值观、情感风格与生活方式的契合度算法，不只看相似，也捕捉互补。' },
               { icon: '🔒', title: '隐私优先', desc: '不是公开社交平台。你只能看到与自己有关的匹配信息。' },
-              { icon: '🎓', title: '覆盖39校', desc: '仅支持 985 高校 .edu.cn 邮箱注册，守护校园的那份真实。' },
+              { icon: '🎓', title: '覆盖高校', desc: '仅支持高校 .edu 邮箱注册，守护校园的那份真实。' },
             ].map((item) => (
               <div key={item.title} className="group">
                 <div className="bg-[#fafafa] rounded-2xl p-5 border border-gray-100 group-hover:border-rose-100 group-hover:shadow-sm transition-all">

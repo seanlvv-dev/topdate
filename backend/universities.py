@@ -83,6 +83,8 @@ UNIVERSITIES = [
      "email_domains": ["lzu.edu.cn"], "region": "西北"},
     {"id": 39, "name": "国防科技大学", "short_name": "NUDT", "province": "湖南", "city": "长沙",
      "email_domains": ["nudt.edu.cn"], "region": "华中"},
+    {"id": 40, "name": "南洋理工大学", "short_name": "NTU", "province": "海外", "city": "新加坡",
+     "email_domains": ["e.ntu.edu.sg"], "region": "海外"},
 ]
 
 NEIGHBORING_PROVINCES = {

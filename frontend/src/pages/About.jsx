@@ -7,7 +7,7 @@ export default function About() {
 
       <div className="card space-y-5 text-sm text-gray-600 leading-relaxed">
         <p>
-          <span className="font-bold gradient-text">TopDate</span> 是一个面向中国 39 所 985 高校在校学生的专属交友匹配平台。
+          <span className="font-bold gradient-text">TopDate</span> 是一个面向 985 高校及合作院校在校学生的专属交友匹配平台。
           我们相信，在相似的学术环境与成长背景中，更容易找到灵魂契合的人。
         </p>
         <p>
