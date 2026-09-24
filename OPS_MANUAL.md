@@ -21,6 +21,36 @@
 
 ---
 
+## 🛠️ 服务器排障（网站打不开时）
+
+项目根目录已备好两个脚本，SSH 上去直接跑：
+
+| 脚本 | 用途 |
+|------|------|
+| `bash diagnose.sh` | **只读诊断**。查内存/磁盘/Docker状态/容器日志/端口/OOM记录，不动任何东西。出问题先跑这个，把输出发我 |
+| `bash restart.sh` | **一键恢复**。清理旧镜像 → 重启全部容器 → 自动验证。适用于容器挂了、机器重启后服务没自启 |
+
+```bash
+# 上传脚本（本机执行，按提示输密码/确认指纹）
+scp "C:/Users/伤悲猪大肠/Desktop/🖥️ 脚本与代码/code/topdate/diagnose.sh" ubuntu@111.229.36.34:~/
+scp "C:/Users/伤悲猪大肠/Desktop/🖥️ 脚本与代码/code/topdate/restart.sh" ubuntu@111.229.36.34:~/
+
+# 登录服务器
+ssh ubuntu@111.229.36.34
+
+# 先诊断
+bash ~/diagnose.sh
+# 需要恢复时
+bash ~/restart.sh
+```
+
+> ⚠️ **已知隐患**：`docker-compose.yml` 里 backend 容器的 `environment` 是**硬编码**的，
+> 没有加载 `.env`。也就是说在服务器 `.env` 里加 `LLM_API_KEY` **不会自动生效**，
+> 需要在 compose 的 backend.environment 里补一行 `LLM_API_KEY=${LLM_API_KEY}` 才行。
+> 部署 AI 功能前必须先改这里。
+
+---
+
 ## 📋 版本记录
 
 | 版本 | 日期 | 主要特征 |
