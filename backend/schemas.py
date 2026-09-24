@@ -215,3 +215,9 @@ class PhotoUploadResponse(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str = Field(min_length=6, max_length=100)
     new_password: str = Field(min_length=6, max_length=100)
+
+
+# ==================== AI ====================
+
+class IcebreakerRequest(BaseModel):
+    match_id: int

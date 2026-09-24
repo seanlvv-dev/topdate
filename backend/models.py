@@ -132,6 +132,17 @@ class MatchHistory(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class AIResult(Base):
+    """AI 生成内容缓存（如破冰助手结果）"""
+    __tablename__ = "ai_results"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    match_id = Column(Integer, index=True, nullable=False)
+    kind = Column(String(30), default="icebreaker")
+    content = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class AdminLog(Base):
     __tablename__ = "admin_logs"
 

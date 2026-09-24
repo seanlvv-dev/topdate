@@ -21,6 +21,7 @@ RATE_LIMITS: dict[str, int] = {
     "/api/auth/forgot-password": 5,
     "/api/auth/reset-password": 5,
     "/api/auth/resend-verification": 3,
+    "/api/ai/icebreaker": 3,       # AI 破冰生成，1分钟3次（控制调用成本）
 }
 
 _hits: dict[str, list[float]] = defaultdict(list)

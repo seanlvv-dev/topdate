@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     TOP_MATCHES_PER_USER: int = 1
     SITE_URL: str = "http://111.229.36.34:3000"
 
+    # AI 破冰助手（OpenAI 兼容接口：DeepSeek / 通义 / 智谱 / Ollama 等）
+    LLM_API_BASE: str = "https://api.deepseek.com/v1"
+    LLM_API_KEY: str = ""
+    LLM_MODEL: str = "deepseek-chat"
+    LLM_TIMEOUT: float = 60.0
+
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
     class Config:

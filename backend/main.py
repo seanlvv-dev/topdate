@@ -23,7 +23,7 @@ from config import get_settings
 from database import get_db, init_db, engine, Base
 from models import (
     User, VerificationCode, Match, MatchHistory, AdminLog,
-    StudentVerificationStatus, MatchStatus, Gender,
+    StudentVerificationStatus, MatchStatus, Gender, AIResult,
 )
 from schemas import (
     RegisterRequest, VerifyEmailRequest, SendCodeRequest,
@@ -33,6 +33,7 @@ from schemas import (
     ProfileUpdateRequest, AdminActionRequest, UniversityManageRequest,
     ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest,
     ReportRequest, DeleteAccountRequest, PhotoUploadResponse, ChangePasswordRequest,
+    IcebreakerRequest,
 )
 from auth import (
     hash_password, verify_password, create_access_token,
@@ -48,6 +49,7 @@ from universities import (
 from matching import compute_match_score
 from tasks import run_tuesday_matching, run_saturday_matching, cleanup_expired_matches
 from rate_limiter import check_rate_limit
+from ai_service import generate_icebreaker, AIServiceError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -663,6 +665,61 @@ async def report_match(
     await db.commit()
 
     return {"message": "举报已提交，管理员将进行审核"}
+
+
+# ==================== AI 破冰助手 API ====================
+
+@app.post("/api/ai/icebreaker", response_model=dict)
+async def generate_icebreaker_api(
+    req: IcebreakerRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """AI 破冰助手：为已成功匹配的双方生成破冰话题与开场白（结果缓存，重复请求不重复调用模型）"""
+    if not check_rate_limit("/api/ai/icebreaker", request.client.host):
+        raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
+
+    result = await db.execute(select(Match).where(Match.id == req.match_id))
+    match = result.scalar_one_or_none()
+    if not match:
+        raise HTTPException(status_code=404, detail="匹配记录不存在")
+    if current_user.id not in (match.user1_id, match.user2_id):
+        raise HTTPException(status_code=403, detail="无权操作此匹配")
+    if match.status != MatchStatus.MATCHED.value:
+        raise HTTPException(status_code=400, detail="双方匹配成功后才能生成破冰话题")
+
+    # 命中缓存直接返回
+    cached = await db.execute(
+        select(AIResult)
+        .where(AIResult.match_id == match.id, AIResult.kind == "icebreaker")
+        .order_by(AIResult.id.desc())
+        .limit(1)
+    )
+    cache_row = cached.scalar_one_or_none()
+    if cache_row:
+        return {"status": "ok", "cached": True, "content": cache_row.content}
+
+    users = await db.execute(select(User).where(User.id.in_([match.user1_id, match.user2_id])))
+    pair = users.scalars().all()
+    u1 = next((u for u in pair if u.id == match.user1_id), None)
+    u2 = next((u for u in pair if u.id == match.user2_id), None)
+    if not u1 or not u2:
+        raise HTTPException(status_code=404, detail="用户信息缺失")
+
+    is_user1 = current_user.id == match.user1_id
+    my_answers = (u1 if is_user1 else u2).survey_answers or {}
+    other_answers = (u2 if is_user1 else u1).survey_answers or {}
+
+    try:
+        content = await generate_icebreaker(my_answers, other_answers, match.detail_scores)
+    except AIServiceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    db.add(AIResult(match_id=match.id, kind="icebreaker", content=content))
+    await db.commit()
+
+    return {"status": "ok", "cached": False, "content": content}
 
 
 # ==================== 用户资料 API ====================

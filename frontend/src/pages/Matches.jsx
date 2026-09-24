@@ -2,6 +2,108 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useMatches } from '../hooks/useData';
+import api, { getErrorMessage } from '../utils/api';
+
+function IcebreakerPanel({ matchId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const generate = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.post('/ai/icebreaker', { match_id: matchId });
+      setData(res.data?.content || null);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyOpener = async () => {
+    if (!data?.opener) return;
+    try {
+      await navigator.clipboard.writeText(data.opener);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError('复制失败，请手动选择复制');
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-100 text-left">
+      <div className="flex items-center justify-between mb-1">
+        <h4 className="font-bold text-sm text-purple-700">✨ AI 破冰助手</h4>
+        {!data && (
+          <button
+            onClick={generate}
+            disabled={loading}
+            className="text-xs px-3 py-1.5 rounded-full bg-purple-500 text-white font-medium hover:bg-purple-600 transition-all disabled:opacity-50"
+          >
+            {loading ? '生成中...' : '生成破冰话题'}
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 mb-2">AI 已读你们的问卷，帮你找到共同点并拟好开场白</p>
+
+      {loading && (
+        <div className="flex items-center gap-2 text-xs text-gray-400 py-2">
+          <div className="animate-spin w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full" />
+          正在读你们的故事...
+        </div>
+      )}
+      {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+
+      {data && (
+        <div className="space-y-3 mt-1">
+          {Array.isArray(data.common_ground) && data.common_ground.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">你们的共同点</p>
+              <div className="flex flex-wrap gap-1.5">
+                {data.common_ground.map((g, i) => (
+                  <span key={i} className="text-xs bg-white text-purple-600 px-2 py-1 rounded-full border border-purple-100">
+                    {g}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {Array.isArray(data.topics) && data.topics.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">推荐话题</p>
+              <div className="space-y-1.5">
+                {data.topics.map((t, i) => (
+                  <div key={i} className="bg-white rounded-xl px-3 py-2">
+                    <p className="text-xs font-medium text-gray-700">{t.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{t.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.opener && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-medium text-gray-500">开场白（可直接发送）</p>
+                <button onClick={copyOpener} className="text-xs text-purple-500 hover:text-purple-600">
+                  {copied ? '已复制 ✓' : '复制'}
+                </button>
+              </div>
+              <div className="bg-white rounded-xl px-3 py-2">
+                <p className="text-xs text-gray-700 leading-relaxed">{data.opener}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function MatchCard({ match, onAction }) {
   const [acting, setActing] = useState(false);
@@ -110,13 +212,16 @@ function MatchCard({ match, onAction }) {
       )}
 
       {match.status === 'matched' && (
-        <div className="bg-pink-50 rounded-2xl p-4 text-center">
-          <div className="text-lg mb-1">🎉 匹配成功！</div>
-          <p className="text-xs text-gray-500 mb-2">你们互相喜欢了对方，可以联系啦</p>
-          <div className="bg-white rounded-xl p-3 text-left">
-            <p className="text-xs text-gray-400">对方邮箱</p>
-            <p className="text-sm font-medium text-primary-600 break-all">{u.email || '（加载中）'}</p>
+        <div className="space-y-3">
+          <div className="bg-pink-50 rounded-2xl p-4 text-center">
+            <div className="text-lg mb-1">🎉 匹配成功！</div>
+            <p className="text-xs text-gray-500 mb-2">你们互相喜欢了对方，可以联系啦</p>
+            <div className="bg-white rounded-xl p-3 text-left">
+              <p className="text-xs text-gray-400">对方邮箱</p>
+              <p className="text-sm font-medium text-primary-600 break-all">{u.email || '（加载中）'}</p>
+            </div>
           </div>
+          <IcebreakerPanel matchId={match.match_id} />
         </div>
       )}
 
