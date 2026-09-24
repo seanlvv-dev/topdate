@@ -1,6 +1,8 @@
 # TopDate 版本日志
 
 > 当前版本：**v1.1**（2026-05-03）
+>
+> 📌 本地已提交 `feat: AI 破冰助手`（commit `e94cdb6`，2026-09-24），**尚未部署到服务器**。
 
 ---
 
@@ -35,7 +37,7 @@
 
 **你电脑 Power Shell：**
 ```
-cd C:\Users\伤悲猪大肠\Desktop\code\topdate
+cd "C:\Users\伤悲猪大肠\Desktop\🖥️ 脚本与代码\code\topdate"
 git checkout tags/v1.0-stable
 git push origin main --force
 ```
@@ -58,3 +60,28 @@ git reset --hard 70bdc6b
 git push origin main --force
 ```
 服务器再执行上面那句部署命令。
+
+---
+
+## 🚀 部署「AI 破冰助手」（2026-09-24 待做）
+
+代码已在本地提交（`e94cdb6`），**还差两步**：
+
+**1. 申请 API Key**（DeepSeek，国内直连、便宜）
+- 打开 https://platform.deepseek.com → 注册 → 「API Keys」→ 新建
+- 充值 10 元（单次生成成本约 1-2 分钱，演示够用）
+
+**2. 配置 + 部署**
+
+本地推送代码：
+```
+cd "C:\Users\伤悲猪大肠\Desktop\🖥️ 脚本与代码\code\topdate"
+git push
+```
+
+服务器上（先确认 `.env` 已加 `LLM_API_KEY=sk-你的key`）：
+```
+cd ~/topdate && git pull && sudo docker compose build --no-cache backend frontend && sudo docker compose up -d
+```
+
+> 新表 `ai_results` 由启动时 `Base.metadata.create_all` 自动创建，**无需手动迁移**。
